@@ -1,0 +1,6 @@
+{
+  "name": "com.sandersaveli.udk",
+  "version": "1.0.0",
+  "displayName": "UDK",
+  "description": "A package consisting of solutions for typical tasks for Unity development."
+}
