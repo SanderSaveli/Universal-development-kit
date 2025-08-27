@@ -4,7 +4,7 @@ using UnityEngine.UI;
 namespace ProceduralUIImage.Scripts
 {
     [ExecuteInEditMode]
-    [AddComponentMenu("UI/Procedural Image")]
+    [AddComponentMenu("UI/CustomComponents/Procedural Image", 20)]
     public class ProceduralImage : Image
     {
         private static Material materialInstance;

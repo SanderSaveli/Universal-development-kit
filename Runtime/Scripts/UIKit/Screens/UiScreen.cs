@@ -34,28 +34,25 @@ namespace SanderSaveli.UDK.UI
 
         protected void OnDisable() => UnsubscribeFromEvents();
 
-        public virtual void Show(Action callback)
+        public virtual void Show(Action callback = null)
         {
             if (IsDisableWhileHidden) gameObject.SetActive(true);
             ScreenRect.DOKill();
             UiScreenAnimator.Show(DelayTime, ShowTime, () => OnShow(callback));
             Background?.Show();
         }
-
-        public virtual void Show() => Show(null);
         public virtual void ShowImmediately()
         {
             UiScreenAnimator.ShowImmediately();
             Background?.ShowImmediately();
         }
 
-        public virtual void Hide(Action callback)
+        public virtual void Hide(Action callback = null)
         {
             ScreenRect.DOKill();
             UiScreenAnimator.Hide(DelayTime, ShowTime, () => OnHide(callback));
             Background?.Hide();
         }
-        public virtual void Hide() => Hide(null);
 
         public virtual void HideImmediately()
         {

@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3738941f7e0c9c84a86276dc36672900, type: 3}
+  m_Name: ColorSettings
+  m_EditorClassIdentifier: 
+  Colors:
+  - Name: Default
+    TextColorType: 0
+    Color: {r: 1, g: 1, b: 1, a: 1}
+  - Name: White
+    TextColorType: 1
+    Color: {r: 1, g: 1, b: 1, a: 1}
+  - Name: Black
+    TextColorType: 2
+    Color: {r: 0, g: 0, b: 0, a: 1}
+  - Name: Gray
+    TextColorType: 3
+    Color: {r: 0.63529414, g: 0.61960787, b: 0.6156863, a: 1}
+  - Name: Yellow
+    TextColorType: 4
+    Color: {r: 0.99607843, g: 0.8156863, b: 0.003921569, a: 1}
+  - Name: Orange
+    TextColorType: 5
+    Color: {r: 1, g: 0.6117647, b: 0.003921569, a: 1}
+  - Name: Red
+    TextColorType: 6
+    Color: {r: 1, g: 0.2627451, b: 0.07450981, a: 1}
+  - Name: Pink
+    TextColorType: 7
+    Color: {r: 0.99607843, g: 0.20784314, b: 0.33333334, a: 1}
+  - Name: Green
+    TextColorType: 8
+    Color: {r: 0, g: 0.8784314, b: 0.42745098, a: 1}
+  - Name: Violet
+    TextColorType: 9
+    Color: {r: 0.4, g: 0.42745098, b: 0.8784314, a: 1}
+  - Name: Blue
+    TextColorType: 10
+    Color: {r: 0, g: 0.7529412, b: 0.90588236, a: 1}
+  - Name: DarkBlue
+    TextColorType: 11
+    Color: {r: 0, g: 0.57254905, b: 1, a: 1}
