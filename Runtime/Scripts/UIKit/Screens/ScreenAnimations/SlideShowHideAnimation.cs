@@ -49,6 +49,8 @@ namespace SanderSaveli.UDK
         public override void HideImmediately()
         {
             Vector2 toPos = GetOffsetPosition(_exitTo);
+            if(_rectTransform == null)
+                _rectTransform = GetComponent<RectTransform>();
             _rectTransform.anchoredPosition = toPos;
         }
 
