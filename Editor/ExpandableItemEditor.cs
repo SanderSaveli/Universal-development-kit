@@ -27,13 +27,11 @@ namespace SanderSaveli.UDK.UI
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             ExpandableMenuItem expandableMenuItem = expandableItem.AddComponent<ExpandableMenuItem>();
-
             Button button = expandableItem.AddComponent<Button>();
 
             GameObject header = CrateTextPanel(expandableTransform.transform, "Header");
-
-            GameObject description = CrateTextPanel(expandableTransform.transform, "Description");
-            expandableMenuItem.DescriptionPanel = description;
+            expandableItem.AddComponent<RectMask2D>();
+            expandableMenuItem.DescriptionPanel = CrateTextPanel(expandableTransform.transform, "Description"); ;
             expandableMenuItem.ToggleButton = button;
 
             GameObjectUtility.SetParentAndAlign(expandableItem, menuCommand.context as GameObject);
@@ -71,6 +69,7 @@ namespace SanderSaveli.UDK.UI
             GameObject descriptionText = CreateCustomText("CustomText", panel.transform);
             ContentSizeFitter textSizeFitter = descriptionText.AddComponent<ContentSizeFitter>();
             textSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            Debug.Log(panel);
             return panel;
         }
 

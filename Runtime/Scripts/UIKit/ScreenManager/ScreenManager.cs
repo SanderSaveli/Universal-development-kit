@@ -32,7 +32,7 @@ namespace SanderSaveli.UDK.UI
         protected UiScreen _openedScreen;
         protected UiScreen _openedPopup;
 
-        protected List<PopupParams<PopupType>> _popupQueue = new();
+        protected List<PopupParams<PopupType>> _popupWaitList = new();
 
         private void Start()
         {
@@ -58,8 +58,8 @@ namespace SanderSaveli.UDK.UI
         {
             PopupParams<PopupType> popupParams = GetPopup(popup);
 
-            _popupQueue.Add(popupParams);
-            _popupQueue.Sort((x, y) => y.Order.CompareTo(x.Order));
+            _popupWaitList.Add(popupParams);
+            _popupWaitList.Sort((x, y) => y.Order.CompareTo(x.Order));
             await Task.Yield();
             if (_openedPopup == null)
             {
@@ -80,11 +80,11 @@ namespace SanderSaveli.UDK.UI
 
         private void OpenNextPopup()
         {
-            if (_popupQueue.Count <= 0)
+            if (_popupWaitList.Count <= 0)
                 return;
 
-            PopupParams<PopupType> popup = _popupQueue[0];
-            _popupQueue.RemoveAt(0);
+            PopupParams<PopupType> popup = _popupWaitList[0];
+            _popupWaitList.RemoveAt(0);
             _openedPopup = popup.Screen;
             _openedPopup.Show();
         }

@@ -6,9 +6,9 @@ namespace SanderSaveli.UDK.UI
 {
     public class ExpandableMenuItem : MonoBehaviour
     {
-        public GameObject DescriptionPanel { get; set; }
-        public Transform ExpandArrow { get; set; }
-        public Button ToggleButton { get; set; }
+        [SerializeField] public GameObject DescriptionPanel;
+        [SerializeField] public Transform ExpandArrow;
+        [SerializeField] public Button ToggleButton;
 
         [Space]
         [SerializeField] protected float _animationDuration = 0.3f;
@@ -21,7 +21,7 @@ namespace SanderSaveli.UDK.UI
         private float _expandedHeight;
         private float _collapsedHeight;
 
-        private void Awake()
+        private void Start()
         {
             _rectTransform = GetComponent<RectTransform>();
             _contentSizeFitter = GetComponent<ContentSizeFitter>();
@@ -29,18 +29,25 @@ namespace SanderSaveli.UDK.UI
             {
                 gameObject.AddComponent<RectMask2D>();
             }
+            _isExpanded = !_collapsedAtStart;
 
-            _contentSizeFitter.enabled = true;
             DescriptionPanel.SetActive(!_collapsedAtStart);
+            _contentSizeFitter.enabled = true;
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_rectTransform);
         }
 
-        private void Start()
+        private void OnEnable()
         {
-            if(ToggleButton == null)
+            if (ToggleButton == null)
             {
                 ToggleButton = gameObject.GetComponent<Button>();
             }
             ToggleButton.onClick.AddListener(Toggle);
+        }
+
+        private void OnDisable()
+        {
+            ToggleButton.onClick.RemoveListener(Toggle);
         }
 
         public void Toggle()
@@ -84,6 +91,13 @@ namespace SanderSaveli.UDK.UI
 
         protected virtual void Collapse()
         {
+            if (_collapsedHeight == 0)
+            {
+                float rectHeight = LayoutUtility.GetPreferredHeight(_rectTransform);
+                float descriptionHeight = LayoutUtility.GetPreferredHeight(DescriptionPanel.GetComponent<RectTransform>());
+                _collapsedHeight = rectHeight - descriptionHeight;
+            }
+
             _isExpanded = false;
 
             _contentSizeFitter.enabled = false;
