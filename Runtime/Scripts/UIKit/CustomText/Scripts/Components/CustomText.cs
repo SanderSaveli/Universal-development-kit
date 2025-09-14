@@ -17,9 +17,8 @@ namespace CustomText
 
         private bool _isSubcribed = false;
 
-        protected override void Awake()
+        protected override void Start()
         {
-            base.Awake();
             Init();
         }
 
