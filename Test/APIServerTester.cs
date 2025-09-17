@@ -33,7 +33,7 @@ public class APIServerTester : MonoBehaviour
     private IEnumerator TestGET()
     {
         string url = "https://jsonplaceholder.typicode.com/posts/1";
-        yield return APIServer.GET<TestResponse>(
+        yield return APIServer.GET(
             url,
             (TestResponse) => Debug.Log($"✅ GET success: title"),
             (error) => Debug.LogError($"❌ GET error: {error}")
@@ -45,10 +45,10 @@ public class APIServerTester : MonoBehaviour
         string url = "https://jsonplaceholder.typicode.com/posts";
         var body = JsonConvert.SerializeObject(new { title = "foo", body = "bar", userId = 1 });
 
-        yield return APIServer.POST<TestResponse>(
+        yield return APIServer.POST(
             url,
             body,
-            onSuccess => Debug.Log($"✅ POST success: created id = {onSuccess.id}"),
+            onSuccess => Debug.Log($"✅ POST success: created id = {onSuccess}"),
             error => Debug.LogError($"❌ POST error: {error}")
         );
     }
@@ -58,10 +58,10 @@ public class APIServerTester : MonoBehaviour
         string url = "https://jsonplaceholder.typicode.com/posts/1";
         var body = JsonConvert.SerializeObject(new { title = "updated title" });
 
-        yield return APIServer.PATCH<TestResponse>(
+        yield return APIServer.PATCH(
             url,
             body,
-            onSuccess => Debug.Log($"✅ PATCH success: new title = {onSuccess.title}"),
+            onSuccess => Debug.Log($"✅ PATCH success: new title = {onSuccess}"),
             error => Debug.LogError($"❌ PATCH error: {error}")
         );
     }
@@ -70,7 +70,7 @@ public class APIServerTester : MonoBehaviour
     {
         string url = "https://jsonplaceholder.typicode.com/posts/1";
 
-        yield return APIServer.DELETE<string>(
+        yield return APIServer.DELETE(
             url,
             null,
             onSuccess => Debug.Log($"✅ DELETE success, response: {onSuccess}"),
@@ -82,7 +82,7 @@ public class APIServerTester : MonoBehaviour
     {
         string url = "https://jsonplaceholder.typicode.com/invalid_endpoint";
 
-        yield return APIServer.GET<TestResponse>(
+        yield return APIServer.GET(
             url,
             onSuccess => Debug.Log($"❌ ERROR TEST should not succeed, got: {onSuccess}"),
             error => Debug.LogWarning($"✅ Expected error handled: {error}")
