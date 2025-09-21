@@ -11,7 +11,7 @@ namespace ProceduralUIImage.Editor
     /// </summary>
     public class ProceduralImageEditorUtility
     {
-        [MenuItem("GameObject/UI/Custom Components/Procedural Image")]
+        [MenuItem("GameObject/UI/Custom Components/Procedural Image", false, 1)]
         public static void AddProceduralImage()
         {
             GameObject o = new GameObject();

@@ -1,13 +1,11 @@
+using CustomText;
+using ProceduralUIImage.Scripts;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using CustomText;
-using ProceduralUIImage.Scripts;
-using Unity.VisualScripting;
 
 namespace SanderSaveli.UDK.UI
 {
-
     public class ExpandableItemEditor : MonoBehaviour
     {
         [MenuItem("GameObject/UI/Custom Components/Expandable Item", false, 10)]
@@ -63,7 +61,7 @@ namespace SanderSaveli.UDK.UI
             layoutGroup.childForceExpandWidth = true;
             layoutGroup.childControlWidth = true;
             layoutGroup.childForceExpandHeight = false;
-            layoutGroup.padding = new RectOffset(20,20, 20, 20);
+            layoutGroup.padding = new RectOffset(20, 20, 20, 20);
             ContentSizeFitter sizeFitter = panel.AddComponent<ContentSizeFitter>();
             sizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             GameObject descriptionText = CreateCustomText("CustomText", panel.transform);

@@ -6,7 +6,7 @@ namespace CustomText
 {
     public class Custom_TextCreater
     {
-        [MenuItem("GameObject/UI/Custom Components/Text")]
+        [MenuItem("GameObject/UI/Custom Components/Text", false, 2)]
         static void Create(MenuCommand menuCommand)
         {
             GameObject go = new("CustomText");
