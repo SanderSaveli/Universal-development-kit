@@ -23,7 +23,7 @@ namespace SanderSaveli.UDK.UI
         public int Order;
     }
 
-    public class ScreenManager<ScreenType, PopupType> : MonoBehaviour
+    public class ScreenManager<ScreenType, PopupType> : MonoBehaviour where ScreenType: Enum where PopupType: Enum
     {
         [SerializeField] protected List<ScreenParams<ScreenType>> Screens = new();
         [SerializeField] protected List<PopupParams<PopupType>> Popups = new();

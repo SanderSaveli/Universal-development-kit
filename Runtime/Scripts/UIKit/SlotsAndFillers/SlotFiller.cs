@@ -4,7 +4,7 @@ using Zenject;
 
 namespace SanderSaveli.UDK.UI
 {
-    public class ItemFiller<TSlot, T> : MonoBehaviour where TSlot : MonoBehaviour, ISlot<T>
+    public class SlotFiller<TSlot, T> : MonoBehaviour where TSlot : MonoBehaviour, ISlot<T>
     {
         [SerializeField] protected Transform _contentPatent;
         [Header("Prefab")]
