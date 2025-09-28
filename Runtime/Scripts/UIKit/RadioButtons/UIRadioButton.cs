@@ -1,40 +1,41 @@
 using CustomText;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace SanderSaveli.UDK.UI
 {
-    public class UIRadioButton<T> : RadioButton<T>
+    public class UIRadioButton<T> : RadioButton<T> where T :Enum
     {
-        [SerializeField] private ImageColorByType _imageColor;
-        [SerializeField] private CustomText.CustomText _text;
-        [SerializeField] private Button _button;
+        [SerializeField] public ImageColorByType ImageColor;
+        [SerializeField] public CustomText.CustomText Text;
+        [SerializeField] public Button Button;
 
         [Header("Image")]
-        [SerializeField] private Custom_ColorStyle _selectedImageColor;
-        [SerializeField] private Custom_ColorStyle _deselectedImageColor;
+        [SerializeField] public Custom_ColorStyle SelectedImageColor;
+        [SerializeField] public Custom_ColorStyle DeselectedImageColor;
         [Header("Text")]
-        [SerializeField] private Custom_ColorStyle _selectedTextColor;
-        [SerializeField] private Custom_ColorStyle _deselectedTexxtColor;
+        [SerializeField] public Custom_ColorStyle SelectedTextColor;
+        [SerializeField] public Custom_ColorStyle DeselectedTexxtColor;
 
         private void OnEnable()
         {
-            _button.onClick.AddListener(InputSelect);
+            Button.onClick.AddListener(InputSelect);
         }
         private void OnDisable()
         {
-            _button.onClick.RemoveListener(InputSelect);
+            Button.onClick.RemoveListener(InputSelect);
         }
         public override void Select()
         {
-            _imageColor.ChangeColorWithAnimation(_selectedImageColor);
-            _text.ChangeColor(_selectedTextColor);
+            ImageColor.ChangeColorWithAnimation(SelectedImageColor);
+            Text.ChangeColor(SelectedTextColor);
         }
 
         public override void Deselect()
         {
-            _imageColor.ChangeColorWithAnimation(_deselectedImageColor);
-            _text.ChangeColor(_deselectedTexxtColor);
+            ImageColor.ChangeColorWithAnimation(DeselectedImageColor);
+            Text.ChangeColor(DeselectedTexxtColor);
         }
 
         private void InputSelect()

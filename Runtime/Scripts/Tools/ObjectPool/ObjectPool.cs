@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ namespace SanderSaveli.UDK
         public int PoolSize;
         public int PoolIncreaseStep;
 
-        public Queue<T> Pool;
+        protected Queue<T> _pool;
         protected HashSet<T> _allPoolObjects;
         protected T _objectPrefab;
         protected int _currentPoolSize;
@@ -21,7 +22,7 @@ namespace SanderSaveli.UDK
             _objectPrefab = prefab;
             _allPoolObjects = new HashSet<T>();
             _poolParent = parent;
-            Pool = new Queue<T>();
+            _pool = new Queue<T>();
             if(isFillAtStart)
             {
                 FillPool();
@@ -34,10 +35,10 @@ namespace SanderSaveli.UDK
 
         public T Get()
         {
-            if (Pool.Count == 0)
+            if (_pool.Count == 0)
                 ExpandPool();
 
-            T obj = Pool.Dequeue();
+            T obj = _pool.Dequeue();
             obj.gameObject.SetActive(true);
             obj.OnActive();
             return obj;
@@ -46,7 +47,7 @@ namespace SanderSaveli.UDK
         protected virtual void Release(T obj)
         {
             obj.gameObject.SetActive(false);
-            Pool.Enqueue(obj);
+            _pool.Enqueue(obj);
         }
 
         protected void ExpandPool()
@@ -73,7 +74,7 @@ namespace SanderSaveli.UDK
         }
 
         protected virtual T Create() 
-            => Object.Instantiate(_objectPrefab, _poolParent);
+            => UnityEngine.Object.Instantiate(_objectPrefab, _poolParent);
 
         public void Dispose(bool destroyObjects = true)
         {
@@ -82,10 +83,10 @@ namespace SanderSaveli.UDK
                 if (obj != null)
                     obj.OnBackToPool -= Release;
                 if (destroyObjects)
-                    Object.Destroy(obj.gameObject);
+                    UnityEngine.Object.Destroy(obj.gameObject);
             }
 
-            Pool.Clear();
+            _pool.Clear();
             _allPoolObjects.Clear();
             _currentPoolSize = 0;
         }

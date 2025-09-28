@@ -15,7 +15,7 @@ namespace SanderSaveli.UDK.UI
         public CanvasGroup Tab;
     }
 
-    public class RadioButtonTabSwitcher<T> : MonoBehaviour
+    public class RadioButtonTabSwitcher<T> : MonoBehaviour where T : Enum
     {
         [SerializeField] private RadioButtonGroup<T> _radioButtonGroup;
         [SerializeField] private List<TabTypePair<T>> _tabs;

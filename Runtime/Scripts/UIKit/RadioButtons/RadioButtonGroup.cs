@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SanderSaveli.UDK.UI
 {
-    public abstract class RadioButtonGroup<T> : MonoBehaviour
+    public abstract class RadioButtonGroup<T> : MonoBehaviour where T: Enum 
     {
         [SerializeField] private int _startSelectedElement;
 
