@@ -9,6 +9,8 @@ namespace SanderSaveli.UDK
         public readonly int Id;
         public TimerHandle(int id) { Id = id; }
 
-        public void Cancel() => Timer.Cancel(this);
+        public void Cancel() => Timer.CancleTimer(this);
+        public void Pause() => Timer.PauseTimer(this);
+        public void Continue() => Timer.ContinueTimer(this);
     }
 }

@@ -1,8 +1,6 @@
 using DG.Tweening;
 using SanderSaveli.UDK.UI;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SanderSaveli.UDK
@@ -34,22 +32,21 @@ namespace SanderSaveli.UDK
         private void Awake()
         {
             _rectTransform = GetComponent<RectTransform>();
+            _initialAnchoredPosition = _rectTransform.anchoredPosition;
+            transform.localScale = Vector3.one;
         }
 
         public override void Hide(float delay, float duration, Action callback)
         {
             Vector2 toPos = GetOffsetPosition(_exitTo);
 
-            _rectTransform.DOAnchorPos(toPos, duration)
-                .SetEase(_exitEase)
-                .SetDelay(delay)
-                .OnComplete(() => callback?.Invoke());
+            Animate(toPos, duration, delay, _exitEase, callback);
         }
 
         public override void HideImmediately()
         {
             Vector2 toPos = GetOffsetPosition(_exitTo);
-            if(_rectTransform == null)
+            if (_rectTransform == null)
                 _rectTransform = GetComponent<RectTransform>();
             _rectTransform.anchoredPosition = toPos;
         }
@@ -64,15 +61,22 @@ namespace SanderSaveli.UDK
             Vector2 fromPos = GetOffsetPosition(_enterFrom);
             _rectTransform.anchoredPosition = fromPos;
 
-            _rectTransform.DOAnchorPos(_initialAnchoredPosition, duration)
-                .SetEase(_enterEase)
-                .SetDelay(delay)
-                .OnComplete(() => callback?.Invoke());
+            Animate(_initialAnchoredPosition, duration, delay, _enterEase, callback);
         }
 
         public override void ShowImmediately()
         {
             _rectTransform.anchoredPosition = _initialAnchoredPosition;
+        }
+
+        private void Animate(Vector2 anchoredPosition, float duration, float delay, Ease ease, Action callback)
+        {
+            _rectTransform.DOAnchorPos(anchoredPosition, duration)
+                .SetEase(ease)
+                .SetDelay(delay)
+                .SetUpdate(true)
+                .OnComplete(() => callback?.Invoke())
+                .SetLink(gameObject);
         }
 
         private Vector2 GetOffsetPosition(SlideDirection direction)

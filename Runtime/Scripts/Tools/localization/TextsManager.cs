@@ -6,28 +6,13 @@ namespace SanderSaveli.UDK
 {
     public abstract class TextsManager<TLanguage, TextTable> : MonoBehaviour, ITextManager, ILanguageChanger<TLanguage> where TLanguage : Enum
     {
-        private struct PendingRequest
-        {
-            public string Key;
-            public Action<string> Callback;
-
-            public PendingRequest(string key, Action<string> callback)
-            {
-                Key = key;
-                Callback = callback;
-            }
-        }
-
         public TLanguage Language => _language;
         public Action OnLanguageChanged { get; set; }
+        public Action OnTextChanged { get; set; }
 
-        [SerializeField] protected string URL = "";
-        [SerializeField] protected string Path = "Text/application_texts";
         [SerializeField] private bool _isLocalInBuild = true;
 
         protected Dictionary<string, TextTable> _tableTexts;
-
-        private List<PendingRequest> _pending = new();
         private TLanguage _language;
         private bool _isTextsLoaded;
 
@@ -42,7 +27,7 @@ namespace SanderSaveli.UDK
             OnLanguageChanged?.Invoke();
         }
 
-        public string GetText(string key, Action<string> lazy)
+        public string GetText(string key)
         {
             if (_isTextsLoaded)
             {
@@ -50,10 +35,6 @@ namespace SanderSaveli.UDK
                     return GetCurrentLanguageValue(text);
                 Debug.LogError($"[TextsManager] Key '{key}' not found for locale {_language}");
                 return key;
-            }
-            else if(lazy != null)
-            {
-                _pending.Add(new PendingRequest(key, lazy));
             }
             return "";
         }
@@ -67,7 +48,7 @@ namespace SanderSaveli.UDK
 #if UNITY_EDITOR
                 GetTextFromServer(HandleResponce);
 #else
-                GetTextFromFile(ParseAndResolvePendingRequests);
+                GetTextFromFile(HandleLoadFromFile);
 #endif
             }
             else
@@ -86,26 +67,18 @@ namespace SanderSaveli.UDK
 
         private void HandleResponce(string responce)
         {
-            ParseAndResolvePendingRequests(responce);
+            UpdateTexts(responce);
             if (_isLocalInBuild)
             {
                 SaveToFile(responce);
             }
         }
 
-        private void ParseAndResolvePendingRequests(string responce)
+        private void UpdateTexts(string text)
         {
             _isTextsLoaded = true;
-            _tableTexts = ParseResponce(responce);
-
-            if (_pending != null && _pending.Count > 0)
-            {
-                foreach (PendingRequest request in _pending)
-                {
-                    request.Callback?.Invoke(GetText(request.Key, null));
-                }
-            }
-            _pending.Clear();
+            _tableTexts = ParseResponce(text);
+            OnTextChanged?.Invoke();
         }
     }
 }

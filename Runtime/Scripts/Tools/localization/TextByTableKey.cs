@@ -19,22 +19,31 @@ namespace SanderSaveli.UDK
 
         private void OnEnable()
         {
-            if (_text == null)
-            {
-                _text = GetComponent<TMP_Text>();
-            }
+            _text = GetComponent<TMP_Text>();
+            _textManager.OnTextChanged += UpdateText;
+            _textManager.OnLanguageChanged += UpdateText;
+            UpdateText();
+        }
 
+        private void OnDisable()
+        {
+            _textManager.OnTextChanged -= UpdateText;
+            _textManager.OnLanguageChanged -= UpdateText;
+        }
+
+        private void UpdateText()
+        {
             ChangeText(_key);
         }
+
         public void ChangeText(string key)
         {
             _key = key;
-            SetText(_textManager.GetText(_key, SetText));
+            SetText(_textManager.GetText(_key));
         }
 
         private void SetText(string text)
         {
-            Debug.Log(text);
             _text.text = text;
         }
     }

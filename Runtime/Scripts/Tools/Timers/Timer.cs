@@ -11,30 +11,21 @@ namespace SanderSaveli.UDK
             private void Update() => UpdateTimers();
         }
 
-        private struct TimerItem
+        private class TimerItem
         {
             public int Id;
             public float Remaining;
+            public bool IsRealtime;
+            public bool IsOnPause;
             public Action OnComplete;
             public Action<float> OnTick;
-            public bool IsRealtime;
         }
 
-        private static List<TimerItem> _timers = new List<TimerItem>();
-        private static Dictionary<int, int> _idToIndex = new Dictionary<int, int>();
+        private static Dictionary<int, TimerItem> _timers = new Dictionary<int, TimerItem>();
         private static int _nextId = 1;
         private static Runner _runner;
         private static GameObject _runnerGO;
-
-        private static void EnsureRunner()
-        {
-            if (_runner != null) return;
-
-            _runnerGO = new GameObject("[Timer_Runner]");
-            _runnerGO.hideFlags = HideFlags.HideAndDontSave;
-            _runner = _runnerGO.AddComponent<Runner>();
-            GameObject.DontDestroyOnLoad(_runnerGO);
-        }
+        private static List<TimerItem> _completedTimers = new List<TimerItem>();
 
         public static TimerHandle StartTimer(float seconds, Action onComplete, Action<float> onTick = null)
         {
@@ -44,6 +35,25 @@ namespace SanderSaveli.UDK
         public static TimerHandle StartTimerRealtime(float seconds, Action onComplete, Action<float> onTick = null)
         {
             return Start(seconds, onComplete, onTick, true);
+        }
+
+        public static bool CancleTimer(TimerHandle handle)
+        {
+            return RemoveById(handle.Id);
+        }
+
+        public static void PauseTimer(TimerHandle handle)
+        {
+            if (!_timers.TryGetValue(handle.Id, out TimerItem item))
+                return;
+            item.IsOnPause = true;
+        }
+
+        public static void ContinueTimer(TimerHandle handle)
+        {
+            if (!_timers.TryGetValue(handle.Id, out TimerItem item))
+                return;
+            item.IsOnPause = false;
         }
 
         private static TimerHandle Start(float seconds, Action onComplete, Action<float> onTick = null, bool realtime = false)
@@ -63,73 +73,82 @@ namespace SanderSaveli.UDK
                 OnComplete = onComplete,
                 OnTick = onTick,
                 IsRealtime = realtime,
+                IsOnPause = false,
             };
 
-            int index = _timers.Count;
-            _timers.Add(item);
-            _idToIndex[id] = index;
+            _timers.Add(id, item);
 
             return new TimerHandle(id);
         }
 
-        public static bool Cancel(TimerHandle handle)
+        private static void EnsureRunner()
         {
-            return RemoveById(handle.Id);
+            if (_runner != null) return;
+
+            _runnerGO = new GameObject("[Timer_Runner]");
+            _runnerGO.hideFlags = HideFlags.HideAndDontSave;
+            _runner = _runnerGO.AddComponent<Runner>();
+            GameObject.DontDestroyOnLoad(_runnerGO);
         }
 
         private static bool RemoveById(int id)
         {
-            if (!_idToIndex.TryGetValue(id, out int index))
-                return false;
-
-            int lastIndex = _timers.Count - 1;
-            if (index != lastIndex)
+            if( _timers.ContainsKey(id))
             {
-                var last = _timers[lastIndex];
-                _timers[index] = last;
-                _idToIndex[last.Id] = index;
+                _timers.Remove(id);
+                return true;
             }
-
-            _timers.RemoveAt(lastIndex);
-            _idToIndex.Remove(id);
-            return true;
+            return false;
         }
 
         private static void UpdateTimers()
         {
             if (_timers.Count == 0) return;
 
-            for (int i = _timers.Count - 1; i >= 0; i--)
+            foreach(TimerItem timer in _timers.Values)
             {
-                TimerItem timer = _timers[i];
-                timer.Remaining -= timer.IsRealtime ? Time.unscaledDeltaTime : Time.deltaTime;
+                if(timer.IsOnPause) continue;
 
-                float remainToReport = Mathf.Max(0f, timer.Remaining);
-                try
-                {
-                    timer.OnTick?.Invoke(remainToReport);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogException(e);
-                }
+                float delataTime = timer.IsRealtime ? Time.unscaledDeltaTime : Time.deltaTime;
+                TickTimer(timer, delataTime);
 
                 if (timer.Remaining <= 0f)
                 {
-                    try
-                    {
-                        timer.OnComplete?.Invoke();
-                    }
-                    catch (Exception e) 
-                    { 
-                        Debug.LogException(e); 
-                    }
-                    RemoveById(timer.Id);
+                    CompleteTimer(timer);
+                    _completedTimers.Add(timer);
                 }
-                else
-                {
-                    _timers[i] = timer;
-                }
+            }
+
+            foreach(TimerItem timer in _completedTimers)
+            {
+                RemoveById(timer.Id);
+            }
+            _completedTimers.Clear();
+        }
+
+        private static void TickTimer(TimerItem timer, float deltaTime)
+        {
+            timer.Remaining -= deltaTime;
+            float remainToReport = Mathf.Max(0f, timer.Remaining);
+            try
+            {
+                timer.OnTick?.Invoke(remainToReport);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
+        }
+
+        private static void CompleteTimer(TimerItem timer)
+        {
+            try
+            {
+                timer.OnComplete?.Invoke();
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
             }
         }
     }
