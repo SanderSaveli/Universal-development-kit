@@ -1,56 +1,48 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using DG.Tweening;
+using System;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace SanderSaveli.UDK.UI
 {
     public class ScaleShowHideAnimation : ShowHideAnimation
     {
-        [SerializeField] private RectTransform _screen;
+        [SerializeField] private RectTransform _block;
 
         private void Reset()
         {
-            _screen = gameObject.GetComponent<RectTransform>();
+            _block = gameObject.GetComponent<RectTransform>();
         }
 
-        public override void Hide(float delay, float duration, Action callback)
+        protected override void Hide(float duration, Action callback)
         {
-            AnimateScale(Vector3.zero, delay, duration, callback);
+            AnimateScale(Vector3.zero, duration, callback);
         }
 
-        public override void Show(float delay, float duration, Action callback)
+        protected override void Show(float duration, Action callback)
         {
-            AnimateScale(Vector3.one, delay, duration, callback);
+            AnimateScale(Vector3.one, duration, callback);
         }
 
         public override void ShowImmediately()
         {
-            _screen.localScale = Vector3.one;
+            _block.localScale = Vector3.one;
         }
         public override void HideImmediately()
         {
-            _screen.localScale = Vector3.zero;
+            _block.localScale = Vector3.zero;
         }
 
         private void AnimateScale(Vector3 targetScale,
-            float delay,
             float duration,
             Action callback = null
         )
         {
-            _screen.DOKill();
-            _screen.DOScale(targetScale, duration)
+            Debug.Log(targetScale);
+            _block.DOKill();
+            _block.DOScale(targetScale, duration)
                 .SetEase(Ease.OutQuint)
                 .SetUpdate(UpdateType.Late, true)
-                .SetDelay(delay)
-                .OnUpdate(() =>
-                {
-                    List<RectTransform> rectTransforms = _screen.gameObject.GetComponentsInChildren<RectTransform>().ToList();
-                    rectTransforms.ForEach(LayoutRebuilder.ForceRebuildLayoutImmediate);
-                })
+                .SetLink(gameObject)
                 .OnComplete(() =>
                 {
                     callback?.Invoke();

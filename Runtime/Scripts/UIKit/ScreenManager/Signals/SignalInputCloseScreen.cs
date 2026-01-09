@@ -1,4 +1,4 @@
-namespace SanderSaveli.UDK
+namespace SanderSaveli.UDK.UI
 {
     public readonly struct SignalInputCloseScreen
     { }

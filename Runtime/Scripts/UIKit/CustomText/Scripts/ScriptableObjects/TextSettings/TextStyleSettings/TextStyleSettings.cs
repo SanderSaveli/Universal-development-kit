@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using TMPro;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ namespace CustomText
     public class TextStyleParams
     {
         [HideInInspector] public string Name;
-        public Custom_TextStyle TextType;
+        public Custom_TextStyle TextStyle;
         public float TextSize;
         public TMP_FontAsset Font;
         public FontStyles FontStyle;
@@ -45,12 +46,15 @@ namespace CustomText
             }
         }
 
+        public TextStyleParams GetSettingsTyStyle(Custom_TextStyle style) => 
+            TextStyles.Find(t => t.TextStyle.Equals(style));
+
 #if UNITY_EDITOR
         protected void OnValidate()
         {
             foreach (var textStyle in TextStyles)
             {
-                textStyle.Name = textStyle.TextType.ToString();
+                textStyle.Name = textStyle.TextStyle.ToString();
             }
 
             OnTextStyleChanged?.Invoke();

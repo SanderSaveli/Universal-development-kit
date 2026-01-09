@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
@@ -34,6 +34,14 @@ namespace CustomText
             ApplyColorSetting();
         }
 
+        public void ChangeColorWithAnimation(Custom_ColorStyle textColor, float duration = 0.4f)
+        {
+            _textColor = textColor;
+            _selectedTextColor = _textColor;
+            Color newColor = ColorSettings.Instance.GetColorByStyle(_textColor);
+            this.DOColor(newColor, duration).SetLink(gameObject);
+        }
+
         public void ChangeMaterial(Custom_MaterialStyle textMaterial)
         {
             _textMaterial = textMaterial;
@@ -52,7 +60,7 @@ namespace CustomText
             _selectedTextStyle = _textStyle;
 
             if (TextStyleSettings.Instance == null) return;
-            var textTypeSettings = TextStyleSettings.Instance.TextStyles.Find(t => t.TextType.Equals(_textStyle));
+            var textTypeSettings = TextStyleSettings.Instance.GetSettingsTyStyle(_textStyle);
 
             if (textTypeSettings != null)
             {
@@ -68,13 +76,10 @@ namespace CustomText
         private void ApplyColorSetting()
         {
             _selectedTextColor = _textColor;
-
             if (ColorSettings.Instance == null) return;
-            var textColor = ColorSettings.Instance.Colors.Find(t => t.TextColorType.Equals(_textColor));
-            if (textColor != null)
-            {
-                color = textColor.Color;
-            }
+
+            Color textColor = ColorSettings.Instance.GetColorByStyle(_textColor);
+            color = textColor;
         }
 
         private void ApplyMaterialSetting()

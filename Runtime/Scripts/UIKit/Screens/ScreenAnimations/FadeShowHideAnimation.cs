@@ -17,29 +17,14 @@ namespace SanderSaveli.UDK.UI
             _canvasGroup = GetComponent<CanvasGroup>();
         }
 
-        private void AnimateFade(float targetAlpha, bool statusAfter, float delay, float duration, Action callback = null)
+        protected override void Show(float duration, Action callback)
         {
-            _canvasGroup.transform.localScale = Vector3.one;
-            _canvasGroup.DOKill();
-            _canvasGroup.DOFade(targetAlpha, duration)
-                .SetEase(Ease.OutQuint)
-                .SetUpdate(UpdateType.Late, true)
-                .SetDelay(delay)
-                .OnComplete(() =>
-                {
-                    callback?.Invoke();
-                    InterractCanvas(statusAfter);
-                });
+            AnimateFade(_targetMaxValue, true, duration, callback);
         }
 
-        public override void Show(float delay, float duration, Action callback)
+        protected override void Hide(float duration, Action callback)
         {
-            AnimateFade(_targetMaxValue, true, delay, duration, callback);
-        }
-
-        public override void Hide(float delay, float duration, Action callback)
-        {
-            AnimateFade(0f, false, delay, duration, callback);
+            AnimateFade(0f, false, duration, callback);
         }
 
         public override void ShowImmediately()
@@ -54,6 +39,20 @@ namespace SanderSaveli.UDK.UI
             _canvasGroup.transform.localScale = Vector3.zero;
             _canvasGroup.alpha = 0;
             InterractCanvas(false);
+        }
+
+        private void AnimateFade(float targetAlpha, bool statusAfter, float duration, Action callback = null)
+        {
+            _canvasGroup.transform.localScale = Vector3.one;
+            _canvasGroup.DOKill();
+            _canvasGroup.DOFade(targetAlpha, duration)
+                .SetEase(Ease.OutQuint)
+                .SetUpdate(UpdateType.Late, true)
+                .OnComplete(() =>
+                {
+                    callback?.Invoke();
+                    InterractCanvas(statusAfter);
+                });
         }
 
         private void InterractCanvas(bool isOn)

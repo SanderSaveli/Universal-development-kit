@@ -36,11 +36,11 @@ namespace SanderSaveli.UDK
             transform.localScale = Vector3.one;
         }
 
-        public override void Hide(float delay, float duration, Action callback)
+        protected override void Hide(float duration, Action callback)
         {
             Vector2 toPos = GetOffsetPosition(_exitTo);
 
-            Animate(toPos, duration, delay, _exitEase, callback);
+            Animate(toPos, duration, _exitEase, callback);
         }
 
         public override void HideImmediately()
@@ -51,7 +51,7 @@ namespace SanderSaveli.UDK
             _rectTransform.anchoredPosition = toPos;
         }
 
-        public override void Show(float delay, float duration, Action callback)
+        protected override void Show(float duration, Action callback)
         {
             if (_rectTransform == null)
             {
@@ -61,7 +61,7 @@ namespace SanderSaveli.UDK
             Vector2 fromPos = GetOffsetPosition(_enterFrom);
             _rectTransform.anchoredPosition = fromPos;
 
-            Animate(_initialAnchoredPosition, duration, delay, _enterEase, callback);
+            Animate(_initialAnchoredPosition, duration, _enterEase, callback);
         }
 
         public override void ShowImmediately()
@@ -69,11 +69,10 @@ namespace SanderSaveli.UDK
             _rectTransform.anchoredPosition = _initialAnchoredPosition;
         }
 
-        private void Animate(Vector2 anchoredPosition, float duration, float delay, Ease ease, Action callback)
+        private void Animate(Vector2 anchoredPosition, float duration, Ease ease, Action callback)
         {
             _rectTransform.DOAnchorPos(anchoredPosition, duration)
                 .SetEase(ease)
-                .SetDelay(delay)
                 .SetUpdate(true)
                 .OnComplete(() => callback?.Invoke())
                 .SetLink(gameObject);

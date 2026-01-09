@@ -20,6 +20,27 @@ namespace SanderSaveli.UDK.UI
 
         private void Awake() => ApplyColorSetting();
 
+        public void ChangeColor(Custom_ColorStyle style)
+        {
+            _selectedColor = style;
+            if (ColorSettings.Instance == null) return;
+
+            _type = _selectedColor;
+            Change();
+        }
+
+        public void ChangeColorWithAnimation(Custom_ColorStyle style, float duration = 0.4f)
+        {
+            _selectedColor = style;
+
+            if (ColorSettings.Instance == null) return;
+
+            Color color = ColorSettings.Instance.GetColorByStyle(style);
+            _type = _selectedColor;
+            Change();
+            _image.DOColor(color, duration).SetLink(gameObject);
+        }
+
         private void ApplyColorSetting()
         {
             _selectedColor = _type;
@@ -57,27 +78,6 @@ namespace SanderSaveli.UDK.UI
         {
             ColorSettings.Instance.OnColorStyleChanged -= ApplyColorSetting;
             DOTween.Kill(_image);
-        }
-
-        public void ChangeColor(Custom_ColorStyle style)
-        {
-            _selectedColor = style;
-            if (ColorSettings.Instance == null) return;
-            
-            _type = _selectedColor;
-            Change();
-        }
-
-        public void ChangeColorWithAnimation(Custom_ColorStyle style, float duration = 0.4f)
-        {
-            _selectedColor = style;
-
-            if (ColorSettings.Instance == null) return;
-
-            Color color = ColorSettings.Instance.GetColorByStyle(style);
-            _type = _selectedColor;
-            Change();
-            _image.DOColor(color, duration);
         }
     }
 }

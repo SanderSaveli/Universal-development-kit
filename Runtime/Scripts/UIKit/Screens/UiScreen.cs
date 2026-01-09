@@ -1,16 +1,12 @@
 ﻿using DG.Tweening;
 using System;
 using UnityEngine;
-using Zenject;
 
 namespace SanderSaveli.UDK.UI
 {
     [RequireComponent(typeof(RectTransform))]
     public class UiScreen : MonoBehaviour
     {
-        [SerializeField] protected float ShowTime = 0.5f;
-        [SerializeField] protected float DelayTime;
-        [SerializeField] protected bool IsDisableWhileHidden = true;
         [SerializeField] protected UiScreen Background;
         [SerializeField] protected ShowHideAnimation UiScreenAnimator;
 
@@ -36,13 +32,14 @@ namespace SanderSaveli.UDK.UI
 
         public virtual void Show(Action callback = null)
         {
-            if (IsDisableWhileHidden) gameObject.SetActive(true);
+            gameObject.SetActive(true);
             ScreenRect.DOKill();
-            UiScreenAnimator.Show(DelayTime, ShowTime, () => OnShow(callback));
+            UiScreenAnimator.Show(() => OnShow(callback));
             Background?.Show();
         }
         public virtual void ShowImmediately()
         {
+            gameObject.SetActive(true);
             UiScreenAnimator.ShowImmediately();
             Background?.ShowImmediately();
         }
@@ -50,7 +47,7 @@ namespace SanderSaveli.UDK.UI
         public virtual void Hide(Action callback = null)
         {
             ScreenRect.DOKill();
-            UiScreenAnimator.Hide(DelayTime, ShowTime, () => OnHide(callback));
+            UiScreenAnimator.Hide(() => OnHide(callback));
             Background?.Hide();
         }
 
@@ -58,6 +55,7 @@ namespace SanderSaveli.UDK.UI
         {
             UiScreenAnimator.HideImmediately();
             Background?.HideImmediately();
+            gameObject.SetActive(false);
         }
 
         protected virtual void OnDestroy()
@@ -78,9 +76,8 @@ namespace SanderSaveli.UDK.UI
 
         private void OnHide(Action callback)
         {
-            if (IsDisableWhileHidden) gameObject.SetActive(false);
-
             callback?.Invoke();
+            gameObject.SetActive(false);
         }
     }
 }

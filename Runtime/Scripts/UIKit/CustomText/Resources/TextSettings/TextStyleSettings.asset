@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TextStyles:
   - Name: Default
-    TextType: 0
+    TextStyle: 0
     TextSize: 48
     Font: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     FontStyle: 0
@@ -22,7 +22,7 @@ MonoBehaviour:
     CharacterSpacing: -3
     LineSpacing: -15
   - Name: H1
-    TextType: 1
+    TextStyle: 1
     TextSize: 36
     Font: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     FontStyle: -1
@@ -30,7 +30,7 @@ MonoBehaviour:
     CharacterSpacing: -3
     LineSpacing: -15
   - Name: H2
-    TextType: 2
+    TextStyle: 2
     TextSize: 26
     Font: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     FontStyle: 0
@@ -38,7 +38,7 @@ MonoBehaviour:
     CharacterSpacing: -3
     LineSpacing: -15
   - Name: H3
-    TextType: 3
+    TextStyle: 3
     TextSize: 20
     Font: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     FontStyle: 0
@@ -46,7 +46,7 @@ MonoBehaviour:
     CharacterSpacing: -3
     LineSpacing: -15
   - Name: H4
-    TextType: 4
+    TextStyle: 4
     TextSize: 18
     Font: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     FontStyle: 0
