@@ -1,15 +1,15 @@
 using CustomText;
-using System;
+using SanderSaveli.UDK.UI;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
-namespace SanderSaveli.UDK.UI
+namespace SanderSaveli.UDK
 {
-    public class UIRadioButton<T> : RadioButton<T> where T :Enum
+    public class ColorChangeDisableableButton : DisableableButton
     {
         [SerializeField] public ImageColorByType ImageColor;
         [SerializeField] public CustomText.CustomText Text;
-        [SerializeField] public Button Button;
 
         [Header("Image")]
         [SerializeField] public Custom_ColorStyle SelectedImageColor;
@@ -18,29 +18,16 @@ namespace SanderSaveli.UDK.UI
         [SerializeField] public Custom_ColorStyle SelectedTextColor;
         [SerializeField] public Custom_ColorStyle DeselectedTexxtColor;
 
-        private void OnEnable()
-        {
-            Button.onClick.AddListener(InputSelect);
-        }
-        private void OnDisable()
-        {
-            Button.onClick.RemoveListener(InputSelect);
-        }
-        public override void Select()
+        protected override void OnSelect()
         {
             ImageColor.ChangeColorWithAnimation(SelectedImageColor);
             Text.ChangeColor(SelectedTextColor);
         }
 
-        public override void Deselect()
+        protected override void OnDeselect()
         {
             ImageColor.ChangeColorWithAnimation(DeselectedImageColor);
             Text.ChangeColor(DeselectedTexxtColor);
-        }
-
-        private void InputSelect()
-        {
-            OnSelectInput?.Invoke(this);
         }
     }
 }
