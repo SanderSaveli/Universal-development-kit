@@ -1,22 +1,17 @@
 using CustomText;
-using DG.Tweening;
 using UnityEngine;
-using UnityEngine.UI;
 
-namespace SanderSaveli.UDK.UI
+namespace SanderSaveli.UDK
 {
-    [AddComponentMenu("UI/Custom Components/Image Color By Type")]
-    [RequireComponent(typeof(Image))]
-    public class ImageColorByType : MonoBehaviour
+    public abstract class ColorByType : MonoBehaviour
     {
-        public Custom_ColorStyle Color => _type;
+        public Custom_ColorStyle Color => _color;
 
-        [SerializeField] private Custom_ColorStyle _type;
-        [SerializeField] private Image _image;
+        [SerializeField] protected Custom_ColorStyle _color;
+        [SerializeField] protected bool _isOverrideAlpha = true;
 
         private bool _isSubcribed = false;
         private Custom_ColorStyle _selectedColor = Custom_ColorStyle.Default;
-
 
         private void Awake() => ApplyColorSetting();
 
@@ -25,7 +20,7 @@ namespace SanderSaveli.UDK.UI
             _selectedColor = style;
             if (ColorSettings.Instance == null) return;
 
-            _type = _selectedColor;
+            _color = _selectedColor;
             Change();
         }
 
@@ -35,22 +30,36 @@ namespace SanderSaveli.UDK.UI
 
             if (ColorSettings.Instance == null) return;
 
-            Color color = ColorSettings.Instance.GetColorByStyle(style);
-            _type = _selectedColor;
+            Color color = GetColor(style);
+            _color = _selectedColor;
             Change();
-            _image.DOColor(color, duration).SetLink(gameObject);
+            ApplyColorWithAnimation(color, duration);
         }
 
+        protected abstract void ApplyColorWithAnimation(Color color, float duration);
+        protected abstract void ApplyColor(Color color);
+        protected abstract float GetCurrentColorAlpha();
         private void ApplyColorSetting()
         {
-            _selectedColor = _type;
+            _selectedColor = _color;
             if (ColorSettings.Instance == null) return;
+            Color color = GetColor(_selectedColor);
+            ApplyColor(color);
+        }
+
+        protected Color GetColor(Custom_ColorStyle style)
+        {
             Color color = ColorSettings.Instance.GetColorByStyle(_selectedColor);
-            _image.color = color;
+            if (!_isOverrideAlpha)
+            {
+                float currentAlpha = GetCurrentColorAlpha();
+                color.a = currentAlpha;
+            }
+            return color;
         }
 
 #if UNITY_EDITOR
-        private void OnValidate()
+        protected virtual void OnValidate()
         {
             Change();
         }
@@ -58,26 +67,18 @@ namespace SanderSaveli.UDK.UI
 
         private void Change()
         {
-            _image = GetComponent<Image>();
-            if (_image == null)
-            {
-                Debug.LogError("Image not found in " + gameObject.name);
-                return;
-            }
-
             if (!_isSubcribed)
             {
                 ColorSettings.Instance.OnColorStyleChanged += ApplyColorSetting;
                 _isSubcribed = true;
             }
 
-            if (_type != _selectedColor) ApplyColorSetting();
+            if (_color != _selectedColor) ApplyColorSetting();
         }
 
-        private void OnDestroy()
+        protected virtual void OnDestroy()
         {
             ColorSettings.Instance.OnColorStyleChanged -= ApplyColorSetting;
-            DOTween.Kill(_image);
         }
     }
 }
