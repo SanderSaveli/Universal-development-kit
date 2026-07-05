@@ -1,9 +1,9 @@
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using SanderSaveli.UDK.UI;
-using System;
 using UnityEngine;
 
-namespace SanderSaveli.UDK
+namespace SanderSaveli.UDK.UI
 {
     public enum SlideDirection
     {
@@ -36,11 +36,11 @@ namespace SanderSaveli.UDK
             transform.localScale = Vector3.one;
         }
 
-        protected override void Hide(float duration, Action callback)
+        protected override UniTask Hide(float duration)
         {
             Vector2 toPos = GetOffsetPosition(_exitTo);
 
-            Animate(toPos, duration, _exitEase, callback);
+            return Animate(toPos, duration, _exitEase);
         }
 
         public override void HideImmediately()
@@ -51,7 +51,7 @@ namespace SanderSaveli.UDK
             _rectTransform.anchoredPosition = toPos;
         }
 
-        protected override void Show(float duration, Action callback)
+        protected override UniTask Show(float duration)
         {
             if (_rectTransform == null)
             {
@@ -61,7 +61,7 @@ namespace SanderSaveli.UDK
             Vector2 fromPos = GetOffsetPosition(_enterFrom);
             _rectTransform.anchoredPosition = fromPos;
 
-            Animate(_initialAnchoredPosition, duration, _enterEase, callback);
+            return Animate(_initialAnchoredPosition, duration, _enterEase);
         }
 
         public override void ShowImmediately()
@@ -69,13 +69,18 @@ namespace SanderSaveli.UDK
             _rectTransform.anchoredPosition = _initialAnchoredPosition;
         }
 
-        private void Animate(Vector2 anchoredPosition, float duration, Ease ease, Action callback)
+        private UniTask Animate(Vector2 anchoredPosition, float duration, Ease ease)
         {
+            UniTaskCompletionSource completionSource = new UniTaskCompletionSource();
+
             _rectTransform.DOAnchorPos(anchoredPosition, duration)
                 .SetEase(ease)
                 .SetUpdate(true)
-                .OnComplete(() => callback?.Invoke())
-                .SetLink(gameObject);
+                .SetLink(gameObject)
+                .OnComplete(() => completionSource.TrySetResult())
+                .OnKill(() => completionSource.TrySetResult());
+
+            return completionSource.Task;
         }
 
         private Vector2 GetOffsetPosition(SlideDirection direction)

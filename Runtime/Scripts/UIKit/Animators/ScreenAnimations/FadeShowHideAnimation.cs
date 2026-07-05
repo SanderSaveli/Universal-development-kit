@@ -1,5 +1,6 @@
-using System;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using System;
 using UnityEngine;
 
 namespace SanderSaveli.UDK.UI
@@ -17,14 +18,14 @@ namespace SanderSaveli.UDK.UI
             _canvasGroup = GetComponent<CanvasGroup>();
         }
 
-        protected override void Show(float duration, Action callback)
+        protected override UniTask Show(float duration)
         {
-            AnimateFade(_targetMaxValue, true, duration, callback);
+            return AnimateFade(_targetMaxValue, true, duration);
         }
 
-        protected override void Hide(float duration, Action callback)
+        protected override UniTask Hide(float duration)
         {
-            AnimateFade(0f, false, duration, callback);
+            return AnimateFade(0f, false, duration);
         }
 
         public override void ShowImmediately()
@@ -41,8 +42,10 @@ namespace SanderSaveli.UDK.UI
             InterractCanvas(false);
         }
 
-        private void AnimateFade(float targetAlpha, bool statusAfter, float duration, Action callback = null)
+        private UniTask AnimateFade(float targetAlpha, bool statusAfter, float duration)
         {
+            UniTaskCompletionSource completionSource = new UniTaskCompletionSource();
+
             _canvasGroup.transform.localScale = Vector3.one;
             _canvasGroup.DOKill();
             _canvasGroup.DOFade(targetAlpha, duration)
@@ -50,9 +53,12 @@ namespace SanderSaveli.UDK.UI
                 .SetUpdate(UpdateType.Late, true)
                 .OnComplete(() =>
                 {
-                    callback?.Invoke();
                     InterractCanvas(statusAfter);
-                });
+                    completionSource.TrySetResult();
+                })
+                .OnKill(() => completionSource.TrySetResult());
+
+            return completionSource.Task;
         }
 
         private void InterractCanvas(bool isOn)

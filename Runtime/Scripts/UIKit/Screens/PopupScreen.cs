@@ -8,13 +8,12 @@ namespace SanderSaveli.UDK
     public class PopupScreen : UiScreen
     {
         [SerializeField] private Button _closeButton;
-
-        protected SignalBus _signalBus;
+        protected IScreenCloser _closer;
 
         [Inject]
-        public void Construct(SignalBus signalBus)
+        public void Construct(IScreenCloser closer)
         {
-            _signalBus = signalBus;
+            _closer = closer;
         }
 
         protected override void SubscribeToEvents()
@@ -31,7 +30,7 @@ namespace SanderSaveli.UDK
 
         private void HandleClose()
         {
-            _signalBus.Fire(new SignalInputClosePopup());
+            _closer.ClosePopup();
         }
     }
 }

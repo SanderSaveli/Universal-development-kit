@@ -1,5 +1,4 @@
-using System;
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace SanderSaveli.UDK.UI
@@ -18,37 +17,32 @@ namespace SanderSaveli.UDK.UI
         [Min(0)]
         [SerializeField] private float _hideDelay = 0f;
 
-        public void Show(Action callback = null)
+        public async UniTask Show()
         {
-            Show(_showDuration, _showDelay, callback);
+            await Show(_showDuration, _showDelay);
         }
 
-        public void Hide(Action callback = null)
+        public async UniTask Hide()
         {
-            Hide(_hideDuration, _hideDelay, callback);
+            await Hide(_hideDuration, _hideDelay);
         }
 
-        public void Show(float duration, float delay, Action callback = null)
+        public async UniTask Show(float duration, float delay = 0)
         {
-            StartCoroutine(Delay(delay, () => Show(duration, callback)));
+            await UniTask.WaitForSeconds(delay);
+            await Show(duration);
         }
 
-        public void Hide(float duration, float delay, Action callback = null)
+        public async UniTask Hide(float duration, float delay = 0)
         {
-            StartCoroutine(Delay(delay, () => Hide(duration, callback)));
+            await UniTask.WaitForSeconds(delay);
+            await Hide(duration);
         }
 
         public abstract void ShowImmediately();
         public abstract void HideImmediately();
 
-        protected abstract void Show(float duration, Action callback);
-        protected abstract void Hide(float duration, Action callback);
-
-        private IEnumerator Delay(float delay, Action callback)
-        {
-            if (delay > 0)
-                yield return new WaitForSecondsRealtime(delay);
-            callback.Invoke();
-        }
+        protected abstract UniTask Show(float duration);
+        protected abstract UniTask Hide(float duration);
     }
 }

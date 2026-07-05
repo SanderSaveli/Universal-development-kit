@@ -1,5 +1,5 @@
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
-using System;
 using UnityEngine;
 
 namespace SanderSaveli.UDK.UI
@@ -19,8 +19,10 @@ namespace SanderSaveli.UDK.UI
             _block = GetComponent<RectTransform>();
         }
 
-        protected override void Show(float duration, Action callback)
+        protected override UniTask Show(float duration)
         {
+            UniTaskCompletionSource completionSource = new UniTaskCompletionSource();
+
             _block.DOKill();
 
             _block.localScale = Vector3.zero;
@@ -42,18 +44,26 @@ namespace SanderSaveli.UDK.UI
                       .SetEase(Ease.OutQuint)
             );
 
-            sequence.OnComplete(() => callback?.Invoke());
+            sequence.OnComplete(() => completionSource.TrySetResult());
+            sequence.OnKill(() => completionSource.TrySetResult());
+
+            return completionSource.Task;
         }
 
-        protected override void Hide(float duration, Action callback)
+        protected override UniTask Hide(float duration)
         {
+            UniTaskCompletionSource completionSource = new UniTaskCompletionSource();
+
             _block.DOKill();
 
             _block.DOScale(Vector3.zero, duration)
                 .SetEase(Ease.InBack)
                 .SetUpdate(UpdateType.Late, true)
                 .SetLink(gameObject)
-                .OnComplete(() => callback?.Invoke());
+                .OnComplete(() => completionSource.TrySetResult())
+                .OnKill(() => completionSource.TrySetResult());
+
+            return completionSource.Task;
         }
 
         public override void ShowImmediately()

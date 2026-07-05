@@ -1,4 +1,5 @@
-﻿using DG.Tweening;
+﻿using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using System;
 using UnityEngine;
 
@@ -7,6 +8,8 @@ namespace SanderSaveli.UDK.UI
     [RequireComponent(typeof(RectTransform))]
     public class UiScreen : MonoBehaviour
     {
+        public Action<bool> OnScreenStatusChange { get; set; }
+
         [SerializeField] protected UiScreen Background;
         [SerializeField] protected ShowHideAnimation UiScreenAnimator;
 
@@ -30,12 +33,17 @@ namespace SanderSaveli.UDK.UI
 
         protected void OnDisable() => UnsubscribeFromEvents();
 
-        public virtual void Show(Action callback = null)
+        public virtual async UniTask Show()
         {
             gameObject.SetActive(true);
             ScreenRect.DOKill();
-            UiScreenAnimator.Show(() => OnShow(callback));
-            Background?.Show();
+            if (Background != null)
+            {
+                Background.Show().Forget();
+            }
+
+            OnScreenStatusChange?.Invoke(true);
+            await UiScreenAnimator.Show();
         }
         public virtual void ShowImmediately()
         {
@@ -44,11 +52,18 @@ namespace SanderSaveli.UDK.UI
             Background?.ShowImmediately();
         }
 
-        public virtual void Hide(Action callback = null)
+        public virtual async UniTask Hide(Action callback = null)
         {
             ScreenRect.DOKill();
-            UiScreenAnimator.Hide(() => OnHide(callback));
-            Background?.Hide();
+            if (Background != null)
+            {
+                Background.Hide().Forget();
+            }
+
+            await UiScreenAnimator.Hide();
+            callback?.Invoke();
+            OnScreenStatusChange?.Invoke(false);
+            gameObject.SetActive(false);
         }
 
         public virtual void HideImmediately()
@@ -68,16 +83,5 @@ namespace SanderSaveli.UDK.UI
 
         protected virtual void UnsubscribeFromEvents()
         { }
-
-        private void OnShow(Action callback)
-        {
-            callback?.Invoke();
-        }
-
-        private void OnHide(Action callback)
-        {
-            callback?.Invoke();
-            gameObject.SetActive(false);
-        }
     }
 }

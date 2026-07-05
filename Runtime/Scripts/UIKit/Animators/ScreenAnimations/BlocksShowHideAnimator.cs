@@ -1,5 +1,4 @@
-using System;
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,18 +7,15 @@ namespace SanderSaveli.UDK.UI
     public class BlocksShowHideAnimator : ShowHideAnimation
     {
         [Header("Blocks")]
-        [SerializeField] private float _delayBetweenBlocks;
         [SerializeField] private List<ShowHideAnimation> _blocks;
 
-        private Coroutine _currentRoutine;
-        private bool _isShowing;
-        private bool _isHiding;
+        private UniTask _animationTask;
 
         public override void ShowImmediately()
         {
             StopCurrentRoutine();
 
-            foreach (var block in _blocks)
+            foreach (ShowHideAnimation block in _blocks)
             {
                 block.ShowImmediately();
             }
@@ -29,84 +25,43 @@ namespace SanderSaveli.UDK.UI
         {
             StopCurrentRoutine();
 
-            foreach (var block in _blocks)
+            foreach (ShowHideAnimation block in _blocks)
             {
                 block.HideImmediately();
             }
         }
 
-        protected override void Show(float duration, Action callback)
+        protected override async UniTask Show(float duration)
         {
             StopCurrentRoutine();
-            _currentRoutine = StartCoroutine(ShowRoutine(callback));
+            _animationTask = AnimateRoutine(true);
+            await _animationTask;
         }
 
-        protected override void Hide(float duration, Action callback)
+        protected override async UniTask Hide(float duration)
         {
             StopCurrentRoutine();
-            _currentRoutine = StartCoroutine(HideRoutine(callback));
+            _animationTask = AnimateRoutine(false);
+            await _animationTask;
         }
 
-        private IEnumerator ShowRoutine(Action callback)
+        private async UniTask AnimateRoutine(bool isShow)
         {
-            _isShowing = true;
-            _isHiding = false;
+            List<UniTask> showTasks = new List<UniTask>();  
 
-            int completed = 0;
-            int total = _blocks.Count;
-
-            for (int i = 0; i < total; i++)
+            foreach (ShowHideAnimation block in _blocks)
             {
-                if (_isHiding) yield break;
-
-                _blocks[i].Show(() => completed++);
-
-                if (_delayBetweenBlocks > 0f)
-                    yield return new WaitForSeconds(_delayBetweenBlocks);
+                UniTask task = isShow ? block.Show() : block.Hide();
+                showTasks.Add(task);
             }
 
-            yield return new WaitUntil(() => completed == total);
+            await UniTask.WhenAll(showTasks);
 
-            _isShowing = false;
-            callback?.Invoke();
         }
-
-
-        private IEnumerator HideRoutine(Action callback)
-        {
-            _isHiding = true;
-            _isShowing = false;
-
-            int completed = 0;
-            int total = _blocks.Count;
-
-            for (int i = total - 1; i >= 0; i--)
-            {
-                if (_isShowing) yield break;
-
-                _blocks[i].Hide(() => completed++);
-
-                if (_delayBetweenBlocks > 0f)
-                    yield return new WaitForSeconds(_delayBetweenBlocks);
-            }
-
-            yield return new WaitUntil(() => completed == total);
-
-            _isHiding = false;
-            callback?.Invoke();
-        }
-
 
         private void StopCurrentRoutine()
         {
-            if (_currentRoutine != null)
-            {
-                StopCoroutine(_currentRoutine);
-                _currentRoutine = null;
-            }
 
-            _isShowing = false;
-            _isHiding = false;
         }
     }
 }

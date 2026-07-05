@@ -1,5 +1,5 @@
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
-using System;
 using UnityEngine;
 
 namespace SanderSaveli.UDK.UI
@@ -13,40 +13,39 @@ namespace SanderSaveli.UDK.UI
             _block = gameObject.GetComponent<RectTransform>();
         }
 
-        protected override void Hide(float duration, Action callback)
+        protected override UniTask Hide(float duration)
         {
-            AnimateScale(Vector3.zero, duration, callback);
+            return AnimateScale(Vector3.zero, duration);
         }
 
-        protected override void Show(float duration, Action callback)
+        protected override UniTask Show(float duration)
         {
-            AnimateScale(Vector3.one, duration, callback);
+            return AnimateScale(Vector3.one, duration);
         }
 
         public override void ShowImmediately()
         {
             _block.localScale = Vector3.one;
         }
+
         public override void HideImmediately()
         {
             _block.localScale = Vector3.zero;
         }
 
-        private void AnimateScale(Vector3 targetScale,
-            float duration,
-            Action callback = null
-        )
+        private UniTask AnimateScale(Vector3 targetScale, float duration)
         {
-            Debug.Log(targetScale);
+            UniTaskCompletionSource completionSource = new UniTaskCompletionSource();
+
             _block.DOKill();
             _block.DOScale(targetScale, duration)
                 .SetEase(Ease.OutQuint)
                 .SetUpdate(UpdateType.Late, true)
                 .SetLink(gameObject)
-                .OnComplete(() =>
-                {
-                    callback?.Invoke();
-                });
+                .OnComplete(() => completionSource.TrySetResult())
+                .OnKill(() => completionSource.TrySetResult());
+
+            return completionSource.Task;
         }
     }
 }
