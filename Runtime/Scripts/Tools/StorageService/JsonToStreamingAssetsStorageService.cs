@@ -7,6 +7,12 @@ namespace SanderSaveli.UDK
 {
     public class JsonToStreamingAssetsStorageService : MonoBehaviour, IStorageService
     {
+        public bool HasFile(string key)
+        {
+            string path = BuildStreamingAssetsPath(key);
+            return File.Exists(path);
+        }
+
         public void Save(string key, object data, Action<bool> callback = null)
         {
             string tempPath = BuildTempPath(key);
@@ -70,6 +76,16 @@ namespace SanderSaveli.UDK
                 Debug.LogWarning($"Error with load from StreamingAssets: {ex.Message}");
                 callback?.Invoke(default(T));
             }
+        }
+
+        public void Delete(string key)
+        {
+            string path = BuildStreamingAssetsPath(key);
+
+            if (!File.Exists(path))
+                return;
+
+            File.Delete(path);
         }
 
         private string BuildTempPath(string key)

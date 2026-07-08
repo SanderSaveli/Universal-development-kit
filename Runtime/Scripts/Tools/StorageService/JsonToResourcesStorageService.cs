@@ -13,6 +13,16 @@ namespace SanderSaveli.UDK
     {
         private const string ResourcesFolder = "Assets/Resources/";
 
+        public bool HasFile(string key)
+        {
+#if UNITY_EDITOR
+            string fullPath = BuildEditorPath(key);
+            return File.Exists(fullPath);
+#else
+            return Resources.Load<TextAsset>(key) != null;
+#endif
+        }
+
         public void Save(string key, object data, Action<bool> callback = null)
         {
 #if UNITY_EDITOR
@@ -20,7 +30,7 @@ namespace SanderSaveli.UDK
             {
                 string json = JsonConvert.SerializeObject(data, Formatting.Indented);
 
-                string fullPath = Path.Combine(ResourcesFolder, key + ".json");
+                string fullPath = BuildEditorPath(key);
                 string directory = Path.GetDirectoryName(fullPath);
 
                 if (!Directory.Exists(directory))
@@ -65,6 +75,26 @@ namespace SanderSaveli.UDK
                 Debug.LogError($"Load error: {e.Message}");
                 callback?.Invoke(default);
             }
+        }
+
+        public void Delete(string key)
+        {
+#if UNITY_EDITOR
+            string fullPath = BuildEditorPath(key);
+
+            if (!File.Exists(fullPath))
+                return;
+
+            AssetDatabase.DeleteAsset(fullPath);
+            AssetDatabase.Refresh();
+#else
+            Debug.LogWarning("Delete is not supported in build for Resources");
+#endif
+        }
+
+        private string BuildEditorPath(string key)
+        {
+            return Path.Combine(ResourcesFolder, key + ".json").Replace('\\', '/');
         }
     }
 }

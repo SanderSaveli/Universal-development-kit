@@ -7,6 +7,12 @@ namespace SanderSaveli.UDK
 {
     public class JsonToFileStorageService : IStorageService
     {
+        public bool HasFile(string key)
+        {
+            string path = BuildPath(key);
+            return File.Exists(path);
+        }
+
         public void Save(string key, object data, Action<bool> callback = null)
         {
             string path = BuildPath(key);
@@ -34,6 +40,16 @@ namespace SanderSaveli.UDK
 
                 callback.Invoke(data);
             }
+        }
+
+        public void Delete(string key)
+        {
+            string path = BuildPath(key);
+
+            if (!File.Exists(path))
+                return;
+
+            File.Delete(path);
         }
 
         private string BuildPath(string key) =>

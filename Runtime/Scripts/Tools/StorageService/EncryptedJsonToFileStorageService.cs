@@ -27,6 +27,12 @@ namespace SanderSaveli.UDK
             HMAC_KEY = hmac_key;
         }
 
+        public bool HasFile(string key)
+        {
+            string path = BuildPath(key);
+            return File.Exists(path);
+        }
+
         public void Save(string key, object data, Action<bool> callback = null)
         {
             string path = BuildPath(key);
@@ -39,6 +45,28 @@ namespace SanderSaveli.UDK
             string path = BuildPath(key);
 
             _ = LoadAsync(path, callback);
+        }
+
+        public void Delete(string key)
+        {
+            string path = BuildPath(key);
+            SemaphoreSlim semaphore = _fileLocks.GetOrAdd(path, _ => new SemaphoreSlim(1, 1));
+
+            semaphore.Wait();
+
+            try
+            {
+                if (File.Exists(path))
+                    File.Delete(path);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(ex);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
         }
 
         public async Task<bool> SaveAsync(string key, object data)

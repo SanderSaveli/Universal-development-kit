@@ -8,13 +8,13 @@ using UnityEngine.SceneManagement;
 
 namespace SanderSaveli.UDK.Managers
 {
-    public class SceneLoader : MonoBehaviour, ISceneLoader
+    public abstract class SceneLoader : MonoBehaviour, ISceneLoader
     {
         public bool IsLoading => _isLoading;
-        public SceneName? CurrentTargetScene { get; private set; }
+        public SceneName CurrentTargetScene { get; private set; }
         public float LoadingProgress { get; private set; }
         public Action<float> OnProgressChange { get; set; }
-        public Action<SceneName?> OnTargetSceneChange { get; set; }
+        public Action<SceneName> OnTargetSceneChange { get; set; }
 
         [Header("Components")]
         [SerializeField] private List<SceneTransitionPair> _transitions;
@@ -149,7 +149,7 @@ namespace SanderSaveli.UDK.Managers
             OnProgressChange?.Invoke(LoadingProgress);
         }
 
-        private void SetCurrentTargetScene(SceneName? sceneName)
+        private void SetCurrentTargetScene(SceneName sceneName)
         {
             CurrentTargetScene = sceneName;
             OnTargetSceneChange?.Invoke(CurrentTargetScene);
