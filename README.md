@@ -23,7 +23,7 @@ UDK (`com.sandersaveli.udk`) - Unity-пакет с набором переисп
 5. Вставьте URL репозитория пакета:
 
 ```text
-https://github.com/SanderSaveli/UDK.git
+https://github.com/SanderSaveli/Universal-development-kit.git
 ```
 
 6. Нажмите `Add` и дождитесь завершения импорта.
@@ -33,14 +33,14 @@ https://github.com/SanderSaveli/UDK.git
 ```json
 {
   "dependencies": {
-    "com.sandersaveli.udk": "https://github.com/SanderSaveli/UDK.git"
+    "com.sandersaveli.udk": "https://github.com/SanderSaveli/Universal-development-kit.git"
   }
 }
 ```
 
 ### Локальная установка через Releases
 
-1. Откройте раздел [Releases](https://github.com/SanderSaveli/UDK/releases) в репозитории пакета.
+1. Откройте раздел [Releases](https://github.com/SanderSaveli/Universal-development-kit/releases) в репозитории пакета.
 2. Скачайте архив или `.unitypackage` нужной версии.
 3. Если скачан `.unitypackage`, импортируйте его через `Assets -> Import Package -> Custom Package...`.
 4. Если скачан архив с UPM-пакетом, распакуйте его в локальную папку, затем откройте `Window -> Package Manager`, нажмите `+`, выберите `Add package from disk...` и укажите `package.json` внутри распакованного пакета.
