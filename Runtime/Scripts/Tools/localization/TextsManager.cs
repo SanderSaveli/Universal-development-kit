@@ -48,7 +48,7 @@ namespace SanderSaveli.UDK
 #if UNITY_EDITOR
                 GetTextFromServer(HandleResponce);
 #else
-                GetTextFromFile(HandleLoadFromFile);
+                GetTextFromFile(HandleResponce);
 #endif
             }
             else

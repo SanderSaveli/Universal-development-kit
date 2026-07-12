@@ -54,6 +54,7 @@ https://github.com/SanderSaveli/Universal-development-kit.git
 | DOTween | [Demigiant/dotween](https://github.com/Demigiant/dotween), [официальная страница загрузки](https://dotween.demigiant.com/download.php) | Скачайте DOTween с официальной страницы или из Unity Asset Store, импортируйте в проект, затем откройте `Tools -> Demigiant -> DOTween Utility Panel` и выполните `Setup DOTween...`. |
 | UniTask | [Cysharp/UniTask](https://github.com/Cysharp/UniTask) | В `Window -> Package Manager` выберите `Add package from git URL...` и добавьте `https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask`. |
 | Zenject / Extenject | [modesttree/Zenject](https://github.com/modesttree/Zenject), [Mathijs-Bakker/Extenject](https://github.com/Mathijs-Bakker/Extenject) | Для новых проектов можно использовать Extenject как поддерживаемый fork Zenject. Установите пакет из release-архива или подключите его как локальный package; API сохраняет namespace `Zenject`. |
+| Newtonsoft Json.NET | [JamesNK/Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json), [NuGet package](https://www.nuget.org/packages/Newtonsoft.Json) | Для Unity-проектов удобнее всего установить пакет `com.unity.nuget.newtonsoft-json` через Package Manager или добавить его в `Packages/manifest.json`. Альтернативно можно подключить `Newtonsoft.Json.dll` из NuGet-пакета вручную. |
 
 ## Структура
 

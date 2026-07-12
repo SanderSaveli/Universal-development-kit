@@ -19,7 +19,7 @@ namespace SanderSaveli.UDK.Editor
             GUILayout.Space(5);
 
             if (GUILayout.Button(
-                    new GUIContent("Tools/Open Save Folder", "Open Application.persistentDataPath"),
+                    new GUIContent("Tools/OpenFolder/Save", "Open Application.persistentDataPath"),
                     EditorStyles.toolbarButton,
                     GUILayout.Width(160)))
             {
@@ -27,10 +27,22 @@ namespace SanderSaveli.UDK.Editor
             }
         }
 
-        [MenuItem("Tools/Open Save Folder")]
+        [MenuItem("Tools/OpenFolder/Save")]
         private static void OpenSaveFolder()
         {
             string path = Application.persistentDataPath;
+
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
+            EditorUtility.RevealInFinder(path);
+        }
+
+        [MenuItem("Tools/OpenFolder/Logs")]
+        private static void OpenLogsFolder()
+        {
+            string localAppDataPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
+            string path = Path.Combine(localAppDataPath, "Unity", "Editor");
 
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);

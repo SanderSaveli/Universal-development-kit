@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 
 namespace SanderSaveli.UDK.Managers
 {
-    public abstract class SceneLoader : MonoBehaviour, ISceneLoader
+    public class SceneLoader : MonoBehaviour, ISceneLoader
     {
         public bool IsLoading => _isLoading;
         public SceneName CurrentTargetScene { get; private set; }
@@ -18,10 +18,10 @@ namespace SanderSaveli.UDK.Managers
 
         [Header("Components")]
         [SerializeField] private List<SceneTransitionPair> _transitions;
-        [SerializeField] private TransitionScreen _defaultScreen;
+        [SerializeField] private UiScreen _defaultScreen;
 
         [Header("Parameters")]
-        [SerializeField] private bool _isUseDefaultScreen;
+        [SerializeField] private bool _isUseDefaultScreen = true;
 
         private bool _isLoading;
 
