@@ -9,7 +9,7 @@ namespace SanderSaveli.UDK.Audio.Editor
 
         public void OnPreprocessBuild(BuildReport report)
         {
-            if (!SoundKeyGenerator.ValidateCatalogs(out string error))
+            if (!SoundKeyGenerator.IsCurrent(out string error))
                 throw new BuildFailedException("Audio configuration validation failed:\n" + error);
         }
     }

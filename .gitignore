@@ -5,6 +5,7 @@
 /[Ll]ibrary/
 /[Tt]emp/
 /[Tt]est/
+/[Tt]est.meta
 /[Oo]bj/
 /[Bb]uild/
 /[Bb]uilds/
@@ -71,3 +72,7 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Local Unity feature tests
+Tests/
+Tests.meta

@@ -34,7 +34,7 @@ namespace SanderSaveli.UDK.Audio
                 + "Different catalogs can use different configs with the same ID. Generate IDs in a SoundConfig inspector.", MessageType.Info);
             string catalogError = SoundKeyGenerator.GetCatalogError((AudioCatalog)target);
             if (!string.IsNullOrEmpty(catalogError))
-                EditorGUILayout.HelpBox(catalogError, MessageType.Error);
+                EditorGUILayout.HelpBox(catalogError, MessageType.Warning);
             if (!string.IsNullOrEmpty(SoundKeyGenerator.Error))
                 EditorGUILayout.HelpBox(SoundKeyGenerator.Error, MessageType.Error);
         }

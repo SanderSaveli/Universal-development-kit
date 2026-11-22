@@ -33,8 +33,9 @@ namespace SanderSaveli.UDK.Managers
 
         private bool _isSoundOn;
         private bool _isMusicOn;
-        private float _soundVolume;
-        private float _musicVolume;
+        private float _soundVolume = 1f;
+        private float _musicVolume = 1f;
+        private bool _hasStarted;
 
         private AudioCatalog _audioCatalog;
         private MixerController _mixerController;
@@ -54,16 +55,24 @@ namespace SanderSaveli.UDK.Managers
 
             _audioPool = new AudioPool(transform, _maxSimultaneousSounds);
             _audioPool.Mute(!_isSoundOn);
+            _musicAudioSource.mute = !_isMusicOn;
+        }
+
+        private void Start()
+        {
+            _hasStarted = true;
+            _mixerController.SetSoundVolume(_soundVolume);
+            _mixerController.SetMusicVolume(_musicVolume);
         }
 
         private void Update()
         {
-            _audioPool.ReturnCompletedSounds();
+            _audioPool.Tick();
         }
 
         private void OnDisable()
         {
-            _audioPool?.StopAll();
+            _audioPool?.StopAllImmediate();
         }
 
         private void OnDestroy()
@@ -180,23 +189,31 @@ namespace SanderSaveli.UDK.Managers
 
         private void ChangeSoundVolume(float volume)
         {
+            volume = Mathf.Clamp01(volume);
             if (SoundVolume == volume)
             {
                 return;
             }
             _soundVolume = volume;
-            _mixerController.SetSoundVolume(volume);
+            if (_hasStarted)
+            {
+                _mixerController.SetSoundVolume(volume);
+            }
             OnSoundVolumeChange?.Invoke(_soundVolume);
         }
 
         private void ChangeMusicVolume(float volume)
         {
+            volume = Mathf.Clamp01(volume);
             if (MusicVolume == volume)
             {
                 return;
             }
             _musicVolume = volume;
-            _mixerController.SetMusicVolume(volume);
+            if (_hasStarted)
+            {
+                _mixerController.SetMusicVolume(volume);
+            }
             OnMusicVolumeChange?.Invoke(_musicVolume);
         }
 

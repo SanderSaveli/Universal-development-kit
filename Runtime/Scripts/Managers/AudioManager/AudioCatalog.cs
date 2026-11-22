@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace SanderSaveli.UDK.Audio
@@ -10,11 +9,14 @@ namespace SanderSaveli.UDK.Audio
         public IReadOnlyList<SoundConfig> Sounds => _sounds;
 
         [SerializeField] private List<SoundConfig> _sounds = new List<SoundConfig>();
-        private List<SoundConfig> _chache = new();
+        private readonly Dictionary<string, SoundConfig> _soundsById =
+            new Dictionary<string, SoundConfig>(System.StringComparer.Ordinal);
+        private bool _indexBuilt;
 
         private void OnValidate()
         {
-            _chache.Clear();
+            _soundsById.Clear();
+            _indexBuilt = false;
         }
 
         public bool IsValid()
@@ -45,25 +47,36 @@ namespace SanderSaveli.UDK.Audio
                 }
             }
 
-            _chache.Clear();
+            RebuildIndex();
             return true;
         }
 
         public bool TryGetSound(string id, out SoundConfig soundConfig)
         {
-            soundConfig = _chache.FirstOrDefault(s => s.Id == id);
-            
-            if(soundConfig == null)
+            if (!_indexBuilt)
             {
-                soundConfig = _sounds.FirstOrDefault(s => s.Id == id);
+                RebuildIndex();
+            }
 
-                if(soundConfig != null)
+            soundConfig = null;
+            return id != null && _soundsById.TryGetValue(id, out soundConfig);
+        }
+
+        private void RebuildIndex()
+        {
+            _soundsById.Clear();
+
+            for (int i = 0; i < _sounds.Count; i++)
+            {
+                SoundConfig sound = _sounds[i];
+
+                if (sound != null && !string.IsNullOrEmpty(sound.Id))
                 {
-                    _chache.Add(soundConfig);
+                    _soundsById.TryAdd(sound.Id, sound);
                 }
             }
 
-            return soundConfig != null;
+            _indexBuilt = true;
         }
     }
 }

@@ -10,12 +10,14 @@ namespace SanderSaveli.UDK
         public bool HasFreeSlot => _freeSlots.Count > 0;
 
         private const double COMPLETION_RETRY_SECONDS = 0.02;
+        private const double LOAD_TIMEOUT_SECONDS = 10d;
 
         private readonly Transform _poolParent;
         private readonly AudioSlot[] _slots;
         private readonly Stack<int> _freeSlots;
         private readonly List<int> _pendingCompletions;
         private readonly List<int> _fadingSlots;
+        private readonly List<int> _loadingSlots;
         private bool _isMuted;
 
         public AudioPool(Transform poolParent, int maxSimultaneousSounds)
@@ -26,6 +28,7 @@ namespace SanderSaveli.UDK
             _freeSlots = new Stack<int>(capacity);
             _pendingCompletions = new List<int>(capacity);
             _fadingSlots = new List<int>(capacity);
+            _loadingSlots = new List<int>(capacity);
 
             for (int i = capacity - 1; i >= 0; i--)
             {
@@ -36,6 +39,12 @@ namespace SanderSaveli.UDK
         public AudioHandle Play(SoundPlaybackSettings settings, AudioMixerGroup outputGroup)
         {
             if (settings.Clip == null || _freeSlots.Count == 0)
+            {
+                return default;
+            }
+
+            if (settings.Clip.loadState == AudioDataLoadState.Failed
+                || (settings.Clip.loadState == AudioDataLoadState.Unloaded && !settings.Clip.LoadAudioData()))
             {
                 return default;
             }
@@ -63,40 +72,39 @@ namespace SanderSaveli.UDK
             source.mute = _isMuted;
             source.pitch = settings.Pitch;
             source.loop = settings.Loop;
-            double startTime = AudioSettings.dspTime;
-            slot.StartTime = startTime;
-
-            if (!source.loop)
+            if (settings.Clip.loadState == AudioDataLoadState.Loaded)
             {
-                double duration = source.clip.samples / (double)source.clip.frequency;
-                float speed = Mathf.Abs(source.pitch);
-                double playbackDuration = speed > 0f ? duration / speed : double.PositiveInfinity;
-                double totalFade = slot.FadeIn + (double)slot.FadeOut;
-
-                if (totalFade > playbackDuration)
-                {
-                    float scale = (float)(playbackDuration / totalFade);
-                    slot.FadeIn *= scale;
-                    slot.FadeOut *= scale;
-                }
-
-                slot.NaturalEndTime = startTime + playbackDuration;
-                double endTime = startTime + (speed > 0f ? duration / speed : COMPLETION_RETRY_SECONDS);
-                ScheduleCompletionCheck(slotIndex, endTime);
+                StartPlayback(slotIndex);
+            }
+            else
+            {
+                slot.IsLoading = true;
+                slot.LoadDeadline = Time.realtimeSinceStartupAsDouble + LOAD_TIMEOUT_SECONDS;
+                _loadingSlots.Add(slotIndex);
             }
 
-            if (slot.FadeIn > 0f || slot.FadeOut > 0f)
-            {
-                _fadingSlots.Add(slotIndex);
-            }
-
-            source.volume = slot.BaseVolume * GetEnvelope(slot, startTime);
-            source.Play();
             return new AudioHandle(this, slotIndex, slot.Generation);
         }
 
-        public void ReturnCompletedSounds()
+        public void Tick()
         {
+            for (int i = _loadingSlots.Count - 1; i >= 0; i--)
+            {
+                int slotIndex = _loadingSlots[i];
+                AudioClip clip = _slots[slotIndex].Source.clip;
+
+                if (clip.loadState == AudioDataLoadState.Loaded)
+                {
+                    _loadingSlots.RemoveAt(i);
+                    StartPlayback(slotIndex);
+                }
+                else if (clip.loadState == AudioDataLoadState.Failed
+                    || Time.realtimeSinceStartupAsDouble >= _slots[slotIndex].LoadDeadline)
+                {
+                    ReleaseSlot(slotIndex);
+                }
+            }
+
             if (AudioListener.pause)
             {
                 return;
@@ -147,7 +155,7 @@ namespace SanderSaveli.UDK
             }
         }
 
-        public void StopAll()
+        public void StopAllImmediate()
         {
             _pendingCompletions.Clear();
 
@@ -162,7 +170,7 @@ namespace SanderSaveli.UDK
 
         public void Clear()
         {
-            StopAll();
+            StopAllImmediate();
 
             for (int i = 0; i < _slots.Length; i++)
             {
@@ -197,7 +205,7 @@ namespace SanderSaveli.UDK
                 return;
             }
 
-            if (slot.FadeOut <= 0f)
+            if (slot.IsLoading || slot.FadeOut <= 0f)
             {
                 StopSoundImmediate(slotIndex, generation);
                 return;
@@ -229,6 +237,42 @@ namespace SanderSaveli.UDK
 
             _pendingCompletions.Remove(slotIndex);
             ReleaseSlot(slotIndex);
+        }
+
+        private void StartPlayback(int slotIndex)
+        {
+            ref AudioSlot slot = ref _slots[slotIndex];
+            slot.IsLoading = false;
+            AudioSource source = slot.Source;
+            double startTime = AudioSettings.dspTime;
+            slot.StartTime = startTime;
+
+            if (!source.loop)
+            {
+                double duration = source.clip.samples / (double)source.clip.frequency;
+                float speed = Mathf.Abs(source.pitch);
+                double playbackDuration = speed > 0f ? duration / speed : double.PositiveInfinity;
+                double totalFade = slot.FadeIn + (double)slot.FadeOut;
+
+                if (totalFade > playbackDuration)
+                {
+                    float scale = (float)(playbackDuration / totalFade);
+                    slot.FadeIn *= scale;
+                    slot.FadeOut *= scale;
+                }
+
+                slot.NaturalEndTime = startTime + playbackDuration;
+                double endTime = startTime + (speed > 0f ? duration / speed : COMPLETION_RETRY_SECONDS);
+                ScheduleCompletionCheck(slotIndex, endTime);
+            }
+
+            if (slot.FadeIn > 0f || slot.FadeOut > 0f)
+            {
+                _fadingSlots.Add(slotIndex);
+            }
+
+            source.volume = slot.BaseVolume * GetEnvelope(slot, startTime);
+            source.Play();
         }
 
         private static float GetEnvelope(AudioSlot slot, double now)
@@ -263,6 +307,8 @@ namespace SanderSaveli.UDK
             ref AudioSlot slot = ref _slots[slotIndex];
             slot.IsActive = false;
             _fadingSlots.Remove(slotIndex);
+            _loadingSlots.Remove(slotIndex);
+            slot.IsLoading = false;
 
             if (slot.Source != null)
             {
@@ -289,6 +335,8 @@ namespace SanderSaveli.UDK
             public double EndDspTime;
             public ulong Generation;
             public bool IsActive;
+            public bool IsLoading;
+            public double LoadDeadline;
             public float BaseVolume;
             public double StartTime;
             public double NaturalEndTime;
