@@ -19,7 +19,7 @@ namespace SanderSaveli.UDK.Audio
 
         private static bool _queued;
         private static string _lastError;
-        private static readonly Dictionary<SoundCatalog, string> CATALOG_ERRORS = new Dictionary<SoundCatalog, string>();
+        private static readonly Dictionary<AudioCatalog, string> CATALOG_ERRORS = new Dictionary<AudioCatalog, string>();
 
         static SoundKeyGenerator()
         {
@@ -80,7 +80,7 @@ namespace SanderSaveli.UDK.Audio
             return true;
         }
 
-        internal static string GetCatalogError(SoundCatalog catalog)
+        internal static string GetCatalogError(AudioCatalog catalog)
         {
             return CATALOG_ERRORS.TryGetValue(catalog, out string error) ? error : null;
         }
@@ -92,7 +92,7 @@ namespace SanderSaveli.UDK.Audio
             if (!string.IsNullOrEmpty(_lastError))
                 errors.AppendLine(_lastError);
 
-            foreach (KeyValuePair<SoundCatalog, string> entry in CATALOG_ERRORS)
+            foreach (KeyValuePair<AudioCatalog, string> entry in CATALOG_ERRORS)
             {
                 if (!string.IsNullOrEmpty(entry.Value))
                     errors.AppendLine(AssetDatabase.GetAssetPath(entry.Key) + ":\n" + entry.Value);
@@ -113,11 +113,11 @@ namespace SanderSaveli.UDK.Audio
                 return;
             }
 
-            string[] catalogGuids = AssetDatabase.FindAssets("t:SoundCatalog");
+            string[] catalogGuids = AssetDatabase.FindAssets("t:AudioCatalog");
             for (int i = 0; i < catalogGuids.Length; i++)
             {
                 string path = AssetDatabase.GUIDToAssetPath(catalogGuids[i]);
-                SoundCatalog catalog = AssetDatabase.LoadAssetAtPath<SoundCatalog>(path);
+                AudioCatalog catalog = AssetDatabase.LoadAssetAtPath<AudioCatalog>(path);
                 if (catalog == null)
                     continue;
 

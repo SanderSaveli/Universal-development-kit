@@ -74,7 +74,7 @@ namespace SanderSaveli.UDK
                 if (showFields)
                     DrawFields(position, min, max, lowerLimit, upperLimit);
                 else
-                    DrawSlider(position, min, max, lowerLimit, upperLimit);
+                    DrawSlider(position, min, max, lowerLimit, upperLimit, slider.Step);
             }
             finally
             {
@@ -140,7 +140,7 @@ namespace SanderSaveli.UDK
         }
 
         private void DrawSlider(Rect position, SerializedProperty min, SerializedProperty max,
-            float lowerLimit, float upperLimit)
+            float lowerLimit, float upperLimit, float step)
         {
             bool isInteger = min.propertyType == SerializedPropertyType.Integer;
             float minValue = isInteger ? min.intValue : min.floatValue;
@@ -150,6 +150,12 @@ namespace SanderSaveli.UDK
             EditorGUI.MinMaxSlider(position, ref minValue, ref maxValue, lowerLimit, upperLimit);
             if (EditorGUI.EndChangeCheck())
             {
+                if (step > 0f)
+                {
+                    minValue = Mathf.Round(minValue / step) * step;
+                    maxValue = Mathf.Round(maxValue / step) * step;
+                }
+
                 if (isInteger)
                 {
                     min.intValue = Mathf.Clamp(Mathf.RoundToInt(minValue), (int)lowerLimit, (int)upperLimit);

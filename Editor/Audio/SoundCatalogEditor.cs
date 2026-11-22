@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SanderSaveli.UDK.Audio
 {
-    [CustomEditor(typeof(SoundCatalog))]
+    [CustomEditor(typeof(AudioCatalog))]
     internal sealed class SoundCatalogEditor : UnityEditor.Editor
     {
         private void OnEnable()
@@ -32,7 +32,7 @@ namespace SanderSaveli.UDK.Audio
 
             EditorGUILayout.HelpBox("Each theme catalog must contain exactly one SoundConfig for every generated ID. "
                 + "Different catalogs can use different configs with the same ID. Generate IDs in a SoundConfig inspector.", MessageType.Info);
-            string catalogError = SoundKeyGenerator.GetCatalogError((SoundCatalog)target);
+            string catalogError = SoundKeyGenerator.GetCatalogError((AudioCatalog)target);
             if (!string.IsNullOrEmpty(catalogError))
                 EditorGUILayout.HelpBox(catalogError, MessageType.Error);
             if (!string.IsNullOrEmpty(SoundKeyGenerator.Error))

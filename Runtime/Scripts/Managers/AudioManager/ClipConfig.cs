@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace SanderSaveli.UDK.Audio
 {
@@ -7,11 +8,10 @@ namespace SanderSaveli.UDK.Audio
     public class ClipConfig
     {
         public AudioClip Clip => _clip;
-        public float Volume => _volume;
+        public float GainDb => _gainDb;
 
-        [SerializeField] private AudioClip _clip;
+        [FormerlySerializedAs("Clip"), SerializeField] private AudioClip _clip;
 
-        [Range(0f, 2f), Min(0)]
-        [SerializeField] private float _volume = 1f;
+        [SerializeField, Range(SoundGain.MIN_GAIN_DB, SoundGain.MAX_GAIN_DB)] private float _gainDb;
     }
 }

@@ -96,7 +96,7 @@ namespace SanderSaveli.UDK.Audio.Editor
             _clip = settings.Clip;
             _loop = settings.Loop;
             _pitch = settings.Pitch;
-            _gain = settings.Volume;
+            _gain = SoundGain.GetLinearGain(settings.Volume, settings.GainDb);
             _fadeIn = settings.FadeIn;
             _fadeOut = settings.FadeOut;
             _duration = (double)_clip.samples / _clip.frequency / _pitch;

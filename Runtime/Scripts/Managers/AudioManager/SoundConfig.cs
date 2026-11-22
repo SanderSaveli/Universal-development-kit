@@ -33,9 +33,9 @@ namespace SanderSaveli.UDK.Audio
         [SerializeField, Min(0f)] private float _fadeOut;
 
         [Header("Random")]
-        [SerializeField, MinMaxSlider(0f, 2f)] 
+        [SerializeField, MinMaxSlider(0f, 1f, 0.02f)] 
         private Range _volumeRange = new Range(1f, 1f);
-        [SerializeField, MinMaxSlider(0.01f, 2f)]
+        [SerializeField, MinMaxSlider(0.01f, 2f, 0.02f)]
         private Range _pitchRange = new Range(1f, 1f);
 
         [NonSerialized] private int _previousClipIndex = -1;
@@ -50,12 +50,12 @@ namespace SanderSaveli.UDK.Audio
                 throw new InvalidOperationException($"SoundConfig \"{name}\" ID: {_id} has null clip in index {index}.");
             }
 
-            float volume = clip.Volume * _volumeRange.GetRandom();
+            float volume = Mathf.Clamp01(_volumeRange.GetRandom());
             float pitch = _pitchRange.GetRandom();
             _previousClipIndex = index;
 
             return new SoundPlaybackSettings(clip.Clip, volume, pitch, _loop,
-                _fadeIn, _fadeOut);
+                _fadeIn, _fadeOut, clip.GainDb);
         }
 
         private int ChooseClipIndex()

@@ -1,5 +1,8 @@
+using SanderSaveli.UDK.Audio;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 namespace SanderSaveli.UDK.Managers
 {
@@ -10,12 +13,22 @@ namespace SanderSaveli.UDK.Managers
         public float SoundVolume { get => _soundVolume; set => ChangeSoundVolume(value); }
         public float MusicVolume { get => _musicVolume; set => ChangeMusicVolume(value); }
 
+        public AudioCatalog CurrentCatalog => _audioCatalog;
+        public AudioCatalog AudioCatalog { get => CurrentCatalog; set => SetCatalog(value); }
+
         public Action<bool> OnSoundStatusChange { get; set; }
         public Action<bool> OnMusicStatusChange { get; set; }
         public Action<float> OnSoundVolumeChange { get; set; }
         public Action<float> OnMusicVolumeChange { get; set; }
+        public Action<AudioCatalog> OnAudioCatalogChange { get; set; }
 
-        [SerializeField] private AudioSource _soundAudioSource;
+        [Header("General")]
+        [SerializeField] private AudioCatalog _defaultCatalog;
+        [SerializeField] private AudioMixer _audioMixer;
+        [Min(10)]
+        [SerializeField] private int _maxSimultaneousSounds = 40;
+
+        [Header("Audio Sources")]
         [SerializeField] private AudioSource _musicAudioSource;
 
         private bool _isSoundOn;
@@ -23,19 +36,124 @@ namespace SanderSaveli.UDK.Managers
         private float _soundVolume;
         private float _musicVolume;
 
-        public void PlaySound(AudioClip clip)
+        private AudioCatalog _audioCatalog;
+        private MixerController _mixerController;
+        private AudioPool _audioPool;
+        private AudioMixerGroup _soundGroup;
+        private readonly Dictionary<string, double> _lastPlayTimes = new Dictionary<string, double>(StringComparer.Ordinal);
+
+        private void Awake()
         {
-            _soundAudioSource.PlayOneShot(clip);
+            ResetCatalog();
+            _mixerController = new MixerController(_audioMixer);
+
+            _soundGroup = FindMixerGroup(SoundGain.MIXER_GROUP_PATH);
+            AudioMixerGroup musicGroup = FindMixerGroup("Master/Music");
+
+            _musicAudioSource.outputAudioMixerGroup = musicGroup;
+
+            _audioPool = new AudioPool(transform, _maxSimultaneousSounds);
+            _audioPool.Mute(!_isSoundOn);
         }
 
-        public void PlaySound(AudioClip clip, float volume)
+        private void Update()
         {
-            _soundAudioSource.PlayOneShot(clip, volume);
+            _audioPool.ReturnCompletedSounds();
+        }
+
+        private void OnDisable()
+        {
+            _audioPool?.StopAll();
+        }
+
+        private void OnDestroy()
+        {
+            _audioPool?.Clear();
+        }
+
+        public AudioHandle PlaySound(string id)
+        {
+            if (!isActiveAndEnabled || _audioCatalog == null || string.IsNullOrEmpty(id))
+            {
+                return default;
+            }
+
+            if (_audioCatalog.TryGetSound(id, out SoundConfig soundConfig))
+            {
+                double now = AudioSettings.dspTime;
+
+                if (_lastPlayTimes.TryGetValue(id, out double lastPlayTime)
+                    && now - lastPlayTime < soundConfig.Cooldown)
+                {
+                    return default;
+                }
+
+                if (!_audioPool.HasFreeSlot)
+                {
+                    return default;
+                }
+
+                AudioHandle handle = Play(soundConfig.CreatePlaybackSettings());
+
+                if (handle.IsPlaying)
+                {
+                    _lastPlayTimes[id] = now;
+                }
+
+                return handle;
+            }
+
+            Debug.LogWarning($"Cant't find sound with id {id} in {_audioCatalog.name}");
+            return default;
+        }
+
+        public AudioHandle PlaySound(SoundId id)
+        {
+            return PlaySound(id.Value);
+        }
+
+        public void SetCatalog(AudioCatalog catalog)
+        {
+            if (catalog == null || !catalog.IsValid())
+            {
+                Debug.LogError("Cannot assign an invalid audio catalog.", this);
+                return;
+            }
+
+            if (_audioCatalog == catalog)
+            {
+                return;
+            }
+
+            _audioCatalog = catalog;
+            OnAudioCatalogChange?.Invoke(_audioCatalog);
+        }
+
+        public void ResetCatalog()
+        {
+            SetCatalog(_defaultCatalog);
+        }
+
+        public AudioHandle PlaySound(AudioClip clip, float volume = 1, bool loop = false, float pitch = 1, float gainDb = 0f)
+        {
+            SoundPlaybackSettings soundSettings = new SoundPlaybackSettings(clip, volume, pitch, loop, 0, 0, gainDb);
+            return Play(soundSettings);
         }
 
         public void ChangeMusic(AudioClip clip)
         {
             _musicAudioSource.clip = clip;
+        }
+
+        private AudioMixerGroup FindMixerGroup(string path)
+        {
+            AudioMixerGroup[] groups = _audioMixer.FindMatchingGroups(path);
+
+            if (groups.Length != 1)
+                throw new InvalidOperationException(
+                    $"Expected one mixer group matching '{path}' in '{_audioMixer.name}'.");
+
+            return groups[0];
         }
 
         private void ChangeSoundStatus(bool isActive)
@@ -45,7 +163,7 @@ namespace SanderSaveli.UDK.Managers
                 return;
             }
             _isSoundOn = isActive;
-            _soundAudioSource.mute = !_isSoundOn;
+            _audioPool.Mute(!_isSoundOn);
             OnSoundStatusChange?.Invoke(_isSoundOn);
         }
 
@@ -67,7 +185,7 @@ namespace SanderSaveli.UDK.Managers
                 return;
             }
             _soundVolume = volume;
-            _soundAudioSource.volume = _soundVolume;
+            _mixerController.SetSoundVolume(volume);
             OnSoundVolumeChange?.Invoke(_soundVolume);
         }
 
@@ -78,8 +196,13 @@ namespace SanderSaveli.UDK.Managers
                 return;
             }
             _musicVolume = volume;
-            _musicAudioSource.volume = _musicVolume;
+            _mixerController.SetMusicVolume(volume);
             OnMusicVolumeChange?.Invoke(_musicVolume);
+        }
+
+        private AudioHandle Play(SoundPlaybackSettings soundSettings)
+        {
+            return isActiveAndEnabled ? _audioPool.Play(soundSettings, _soundGroup) : default;
         }
     }
 }
